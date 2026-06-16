@@ -17,7 +17,10 @@ export const societiesRelations = relations(societies, ({ many }) => ({
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
-  userRoles: many(userRoles),
+  // `user_roles` references `users` twice (the holder and the granter), so each side must be
+  // disambiguated with a matching `relationName`.
+  userRoles: many(userRoles, { relationName: 'roleHolder' }),
+  assignedUserRoles: many(userRoles, { relationName: 'roleGranter' }),
   sessions: many(sessions),
 }));
 
@@ -32,9 +35,17 @@ export const rolePermissionsRelations = relations(rolePermissions, ({ one }) => 
 }));
 
 export const userRolesRelations = relations(userRoles, ({ one }) => ({
-  user: one(users, { fields: [userRoles.userId], references: [users.id] }),
+  user: one(users, {
+    fields: [userRoles.userId],
+    references: [users.id],
+    relationName: 'roleHolder',
+  }),
   role: one(roles, { fields: [userRoles.roleId], references: [roles.id] }),
-  assignedByUser: one(users, { fields: [userRoles.assignedBy], references: [users.id] }),
+  assignedByUser: one(users, {
+    fields: [userRoles.assignedBy],
+    references: [users.id],
+    relationName: 'roleGranter',
+  }),
 }));
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
