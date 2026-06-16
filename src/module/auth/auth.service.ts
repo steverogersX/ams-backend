@@ -5,6 +5,7 @@ import { db } from '@/db/client';
 import { users, sessions, societies, roles, rolePermissions, userRoles } from '@/db/schema';
 import { config } from '@/config';
 import { ApiError } from '@/utils/ApiError';
+import type { LoginResponse, MeResponse, RegisterResponse, SocietyMembership } from './auth.types';
 
 const scryptAsync = promisify(scrypt);
 
@@ -32,7 +33,7 @@ function hashToken(raw: string): string {
 }
 
 class AuthService {
-  async register(email: string, password: string, displayName: string) {
+  async register(email: string, password: string, displayName: string): Promise<RegisterResponse> {
     const [existing] = await db
       .select({ id: users.id })
       .from(users)
@@ -53,10 +54,13 @@ class AuthService {
     return user;
   }
 
-  async login(email: string, password: string): Promise<{ token: string }> {
+  async login(email: string, password: string): Promise<LoginResponse> {
     const [user] = await db
       .select({
         id: users.id,
+        email: users.email,
+        displayName: users.displayName,
+        isSuperAdmin: users.isSuperAdmin,
         passwordHash: users.passwordHash,
         isActive: users.isActive,
       })
@@ -64,7 +68,6 @@ class AuthService {
       .where(eq(users.email, email))
       .limit(1);
 
-    // Use a constant-time message to prevent user enumeration
     if (!user || !user.passwordHash) throw ApiError.unauthorized('Invalid credentials');
     if (!user.isActive) throw ApiError.unauthorized('Account is inactive');
 
@@ -75,9 +78,46 @@ class AuthService {
     const tokenHash = hashToken(rawToken);
     const expiresAt = new Date(Date.now() + config.auth.sessionExpiresInDays * 24 * 60 * 60 * 1000);
 
-    await db.insert(sessions).values({ tokenHash, userId: user.id, expiresAt });
+    const [membershipsRaw, _session] = await Promise.all([
+      db
+        .select({
+          societyId: societies.id,
+          societyName: societies.name,
+          societyToken: societies.token,
+          roleName: roles.name,
+        })
+        .from(userRoles)
+        .innerJoin(roles, eq(roles.id, userRoles.roleId))
+        .innerJoin(societies, eq(societies.id, roles.societyId))
+        .where(and(eq(userRoles.userId, user.id), eq(societies.isActive, true))),
+      db.insert(sessions).values({ tokenHash, userId: user.id, expiresAt }),
+    ]);
 
-    return { token: rawToken };
+    const societyMap = new Map<string, SocietyMembership>();
+    for (const row of membershipsRaw) {
+      const entry = societyMap.get(row.societyId);
+      if (entry) {
+        entry.roles.push(row.roleName);
+      } else {
+        societyMap.set(row.societyId, {
+          societyId: row.societyId,
+          societyName: row.societyName,
+          societyToken: row.societyToken,
+          roles: [row.roleName],
+        });
+      }
+    }
+
+    return {
+      token: rawToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        displayName: user.displayName,
+        isSuperAdmin: user.isSuperAdmin,
+      },
+      societies: [...societyMap.values()],
+    };
   }
 
   async logout(rawToken: string): Promise<void> {
@@ -114,7 +154,6 @@ class AuthService {
 
     if (!user || !user.isActive) throw ApiError.unauthorized('Account is inactive');
 
-    // Fire-and-forget: update lastUsedAt without blocking the request
     void db.update(sessions).set({ lastUsedAt: now }).where(eq(sessions.tokenHash, tokenHash));
 
     return { userId: user.id, isSuperAdmin: user.isSuperAdmin };
@@ -141,7 +180,7 @@ class AuthService {
     return new Set(rows.map((r) => r.permission));
   }
 
-  async getMe(userId: string) {
+  async getMe(userId: string): Promise<MeResponse> {
     const [user] = await db
       .select({
         id: users.id,
