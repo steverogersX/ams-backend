@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import { ZodError } from 'zod';
 import { ApiError } from '@/utils/ApiError';
-import { env } from '@/config/env';
+import { config } from '@/config';
 import { logger } from '@/utils/logger';
 
 export function errorHandler(
@@ -35,7 +35,7 @@ export function errorHandler(
     error: {
       message,
       ...(details !== undefined ? { details } : {}),
-      ...(env.isProduction ? {} : { stack: err instanceof Error ? err.stack : undefined }),
+      ...(config.isProduction ? {} : { stack: err instanceof Error ? err.stack : undefined }),
     },
   });
 }

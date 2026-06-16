@@ -1,9 +1,9 @@
 import pino from 'pino';
-import { env } from '@/config/env';
+import { config } from '@/config';
 
 export const logger = pino({
-  level: env.isProduction ? 'info' : 'debug',
-  ...(env.isProduction
+  level: config.isProduction ? 'info' : 'debug',
+  ...(config.isProduction
     ? {}
     : {
         transport: {

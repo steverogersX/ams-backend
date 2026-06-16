@@ -16,9 +16,19 @@ if (!parsed.success) {
   process.exit(1);
 }
 
-export const env = {
-  ...parsed.data,
-  isProduction: parsed.data.NODE_ENV === 'production',
-  isDevelopment: parsed.data.NODE_ENV === 'development',
-  isTest: parsed.data.NODE_ENV === 'test',
-};
+const env = parsed.data;
+
+export const config = {
+  env: env.NODE_ENV,
+  isProduction: env.NODE_ENV === 'production',
+  isDevelopment: env.NODE_ENV === 'development',
+  isTest: env.NODE_ENV === 'test',
+  server: {
+    port: env.PORT,
+  },
+  cors: {
+    origin: env.CORS_ORIGIN,
+  },
+} as const;
+
+export type Config = typeof config;

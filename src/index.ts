@@ -1,13 +1,13 @@
 import type { Server } from 'node:http';
 import { createApp } from './app';
-import { env } from '@/config/env';
+import { config } from '@/config';
 import { logger } from '@/utils/logger';
 
 function bootstrap(): void {
   const app = createApp();
 
-  const server: Server = app.listen(env.PORT, () => {
-    logger.info(`Server listening on http://localhost:${env.PORT} (${env.NODE_ENV})`);
+  const server: Server = app.listen(config.server.port, () => {
+    logger.info(`Server listening on http://localhost:${config.server.port} (${config.env})`);
   });
 
   const shutdown = (signal: string) => {

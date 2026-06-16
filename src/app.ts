@@ -2,7 +2,7 @@ import express, { type Application } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
-import { env } from '@/config/env';
+import { config } from '@/config';
 import { logger } from '@/utils/logger';
 import { apiRoutes } from '@/routes';
 import { errorHandler } from '@/middlewares/errorHandler';
@@ -14,7 +14,8 @@ export function createApp(): Application {
   app.use(helmet());
   app.use(
     cors({
-      origin: env.CORS_ORIGIN === '*' ? true : env.CORS_ORIGIN.split(',').map((o) => o.trim()),
+      origin:
+        config.cors.origin === '*' ? true : config.cors.origin.split(',').map((o) => o.trim()),
     }),
   );
   app.use(express.json());
