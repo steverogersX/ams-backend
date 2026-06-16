@@ -1,6 +1,9 @@
 import type { NextFunction, Request, Response } from 'express';
 import { ZodError } from 'zod';
+import { StatusCodes } from 'http-status-codes';
+import { fromZodError } from 'zod-validation-error';
 import { ApiError } from '@/utils/ApiError';
+import { sendError } from '@/utils/ApiResponse';
 import { config } from '@/config';
 import { logger } from '@/utils/logger';
 
@@ -10,7 +13,7 @@ export function errorHandler(
   res: Response,
   _next: NextFunction,
 ): void {
-  let statusCode = 500;
+  let statusCode: number = StatusCodes.INTERNAL_SERVER_ERROR;
   let message = 'Internal Server Error';
   let details: unknown;
 
@@ -19,23 +22,20 @@ export function errorHandler(
     message = err.message;
     details = err.details;
   } else if (err instanceof ZodError) {
-    statusCode = 400;
-    message = 'Validation failed';
+    statusCode = StatusCodes.BAD_REQUEST;
+    message = fromZodError(err).toString();
     details = err.flatten().fieldErrors;
   } else if (err instanceof Error) {
     message = err.message;
   }
 
-  if (statusCode >= 500) {
+  if (statusCode >= StatusCodes.INTERNAL_SERVER_ERROR) {
     logger.error({ err }, 'Unhandled error');
   }
 
-  res.status(statusCode).json({
-    success: false,
-    error: {
-      message,
-      ...(details !== undefined ? { details } : {}),
-      ...(config.isProduction ? {} : { stack: err instanceof Error ? err.stack : undefined }),
-    },
+  sendError(res, message, {
+    statusCode,
+    details,
+    stack: config.isProduction || !(err instanceof Error) ? undefined : err.stack,
   });
 }

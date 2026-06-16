@@ -7,6 +7,7 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(3000),
   CORS_ORIGIN: z.string().default('*'),
+  DATABASE_URL: z.string().url(),
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -28,6 +29,9 @@ export const config = {
   },
   cors: {
     origin: env.CORS_ORIGIN,
+  },
+  database: {
+    url: env.DATABASE_URL,
   },
 } as const;
 
