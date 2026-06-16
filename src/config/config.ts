@@ -8,6 +8,7 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(3000),
   CORS_ORIGIN: z.string().default('*'),
   DATABASE_URL: z.string().url(),
+  SESSION_EXPIRES_IN_DAYS: z.coerce.number().int().positive().default(30),
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -32,6 +33,9 @@ export const config = {
   },
   database: {
     url: env.DATABASE_URL,
+  },
+  auth: {
+    sessionExpiresInDays: env.SESSION_EXPIRES_IN_DAYS,
   },
 } as const;
 
