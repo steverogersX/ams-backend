@@ -1,22 +1,14 @@
 import { PermissionDefinition } from './permission.definition';
 
 /**
- * The permission registry — the single source of truth for every valid permission in the platform.
- *
- * Permissions live in code only (never in the database) and are deny-by-default: a feature is
- * inaccessible until a permission is declared here and granted to a role. To add or change a
- * permission, a developer edits this file — it cannot be mutated at runtime.
+ * The single source of truth for every valid permission. Permissions are deny-by-default and
+ * live only in code (never the database) — adding or changing one requires editing this file.
  */
 
 const def = (name: string, domain: string, description: string): PermissionDefinition =>
   new PermissionDefinition(name, domain, description);
 
-/**
- * Typed accessor for every permission. Usage: `Permission.BillingGenerate`.
- *
- * `Object.freeze` prevents adding, replacing, or removing entries at runtime, so the registry can
- * only change through a code edit.
- */
+// Frozen so entries can only change through a code edit, never at runtime.
 export const Permission = Object.freeze({
   VisitorApprove: def('visitor.approve', 'visitor', 'Approve a visitor'),
   VisitorDeny: def('visitor.deny', 'visitor', 'Deny a visitor'),
@@ -57,12 +49,10 @@ export const Permission = Object.freeze({
 
 export type PermissionKey = keyof typeof Permission;
 
-/** Every permission as a flat list — used for seeding and validation. */
 export const ALL_PERMISSIONS: readonly PermissionDefinition[] = Object.values(Permission);
 
 const PERMISSION_NAMES = new Set(ALL_PERMISSIONS.map((p) => p.name));
 
-/** Whether `name` is a known, registered permission. */
 export function isValidPermission(name: string): boolean {
   return PERMISSION_NAMES.has(name);
 }

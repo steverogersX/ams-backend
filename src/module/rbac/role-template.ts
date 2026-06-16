@@ -2,26 +2,19 @@ import { PermissionDefinition } from './permission.definition';
 import { ALL_PERMISSIONS, Permission } from './permission.registry';
 
 /**
- * Default role templates shipped with the product.
- *
- * Each society gets these as starting points (seeded into the database per society in a later phase),
- * after which a society admin can modify, delete, or add roles. They are NOT hardcoded into business
- * logic — they are code-defined seed data, expressed via the {@link Permission} registry rather than
- * raw strings so the compiler guarantees every permission exists.
- *
- * `super_admin` is intentionally absent: it is a platform-level sentinel that implicitly holds every
- * permission and is not society-scoped, so it is never seeded as a society role row.
+ * Default roles seeded per society as starting points; an admin can later modify or add roles.
+ * `super_admin` is intentionally absent — it is a platform-level sentinel that implicitly holds
+ * every permission and is not society-scoped, so it is never seeded as a society role.
  */
 export interface RoleTemplate {
   name: string;
   permissions: PermissionDefinition[];
 }
 
-/** Platform-level role held by the software vendor. Has every permission; not society-scoped. */
 export const SUPER_ADMIN_ROLE = 'super_admin';
 
 export const DEFAULT_ROLE_TEMPLATES: readonly RoleTemplate[] = [
-  // One per society. All society-level permissions (here, all permissions).
+  // The highest in-society role; one per society, granted every permission.
   { name: 'society_admin', permissions: [...ALL_PERMISSIONS] },
   // Flat owners who live in the society.
   {
