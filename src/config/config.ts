@@ -9,6 +9,7 @@ const envSchema = z.object({
   CORS_ORIGIN: z.string().default('*'),
   DATABASE_URL: z.string().url(),
   SESSION_EXPIRES_IN_DAYS: z.coerce.number().int().positive().default(30),
+  LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -36,6 +37,9 @@ export const config = {
   },
   auth: {
     sessionExpiresInDays: env.SESSION_EXPIRES_IN_DAYS,
+  },
+  log: {
+    level: env.LOG_LEVEL ?? (env.NODE_ENV === 'production' ? 'info' : 'debug'),
   },
 } as const;
 

@@ -1,9 +1,8 @@
 import express, { type Application } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import { pinoHttp } from 'pino-http';
 import { config } from '@/config';
-import { logger } from '@/utils/logger';
+import { httpLogger } from '@/middlewares/httpLogger';
 import { apiRoutes } from '@/routes';
 import { errorHandler } from '@/middlewares/errorHandler';
 import { notFound } from '@/middlewares/notFound';
@@ -20,7 +19,7 @@ export function createApp(): Application {
   );
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
-  app.use(pinoHttp({ logger }));
+  app.use(httpLogger);
 
   app.use('/api/v1', apiRoutes);
 
