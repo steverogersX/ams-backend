@@ -1,0 +1,221 @@
+{
+  "collection": {
+    "info": {
+      "name": "AMS — Apartment Management System",
+      "description": "API collection for the AMS backend. Multi-tenant platform: one instance hosts many societies, each fully isolated.\n\nSet `token` variable after login. Set `societyId`, `userId`, `roleId` as you create resources.",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+      { "key": "baseUrl", "value": "http://localhost:3000/api/v1", "type": "string" },
+      {
+        "key": "token",
+        "value": "",
+        "type": "string",
+        "description": "Bearer token from login response"
+      },
+      {
+        "key": "societyId",
+        "value": "",
+        "type": "string",
+        "description": "UUID of the target society"
+      },
+      { "key": "userId", "value": "", "type": "string", "description": "UUID of the target user" },
+      {
+        "key": "roleId",
+        "value": "",
+        "type": "string",
+        "description": "UUID of the role to assign"
+      }
+    ],
+    "item": [
+      {
+        "name": "Auth",
+        "description": "Authentication endpoints — register, login, session management.",
+        "item": [
+          {
+            "name": "Register",
+            "request": {
+              "method": "POST",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "url": {
+                "raw": "{{baseUrl}}/auth/register",
+                "host": ["{{baseUrl}}"],
+                "path": ["auth", "register"]
+              },
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\",\n  \"displayName\": \"Test User\"\n}",
+                "options": { "raw": { "language": "json" } }
+              },
+              "description": "Create a new user account. `displayName` is 1–120 chars. `password` minimum 8 chars."
+            }
+          },
+          {
+            "name": "Login",
+            "request": {
+              "method": "POST",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "url": {
+                "raw": "{{baseUrl}}/auth/login",
+                "host": ["{{baseUrl}}"],
+                "path": ["auth", "login"]
+              },
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}",
+                "options": { "raw": { "language": "json" } }
+              },
+              "description": "Login with email and password. Returns a session token — copy it into the `token` collection variable."
+            }
+          },
+          {
+            "name": "Me",
+            "request": {
+              "method": "GET",
+              "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+              "url": {
+                "raw": "{{baseUrl}}/auth/me",
+                "host": ["{{baseUrl}}"],
+                "path": ["auth", "me"]
+              },
+              "description": "Returns the currently authenticated user profile. Requires a valid session token."
+            }
+          },
+          {
+            "name": "Logout",
+            "request": {
+              "method": "POST",
+              "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+              "url": {
+                "raw": "{{baseUrl}}/auth/logout",
+                "host": ["{{baseUrl}}"],
+                "path": ["auth", "logout"]
+              },
+              "description": "Invalidates the current session token. Requires a valid session token."
+            }
+          }
+        ]
+      },
+      {
+        "name": "Societies — Super Admin",
+        "description": "Platform-level society management. Only accessible by the super admin (software vendor operator). Super admin creates a society and steps back — they must not access individual society data.",
+        "item": [
+          {
+            "name": "Create Society",
+            "request": {
+              "method": "POST",
+              "header": [
+                { "key": "Authorization", "value": "Bearer {{token}}" },
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "url": {
+                "raw": "{{baseUrl}}/societies/createSociety",
+                "host": ["{{baseUrl}}"],
+                "path": ["societies", "createSociety"]
+              },
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"name\": \"Sunrise Apartments\",\n  \"adminUserId\": \"00000000-0000-0000-0000-000000000000\"\n}",
+                "options": { "raw": { "language": "json" } }
+              },
+              "description": "Create a new society on the platform. `adminUserId` must be a valid UUID of an existing registered user. Super admin only."
+            }
+          },
+          {
+            "name": "Get All Societies",
+            "request": {
+              "method": "GET",
+              "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+              "url": {
+                "raw": "{{baseUrl}}/societies/getSocieties",
+                "host": ["{{baseUrl}}"],
+                "path": ["societies", "getSocieties"]
+              },
+              "description": "Returns a list of all societies on the platform. Super admin only."
+            }
+          }
+        ]
+      },
+      {
+        "name": "Societies — Internal (RBAC)",
+        "description": "Society-internal endpoints managed by the society's own committee via RBAC permissions. The active society is identified per-request via the X-Society-Token header. Super admin is intentionally excluded.",
+        "item": [
+          {
+            "name": "Get Society",
+            "request": {
+              "method": "GET",
+              "header": [
+                { "key": "Authorization", "value": "Bearer {{token}}" },
+                {
+                  "key": "X-Society-Token",
+                  "value": "{{societyId}}",
+                  "description": "Identifies the active society for this request"
+                }
+              ],
+              "url": {
+                "raw": "{{baseUrl}}/societies/{{societyId}}/getSociety",
+                "host": ["{{baseUrl}}"],
+                "path": ["societies", "{{societyId}}", "getSociety"]
+              },
+              "description": "Fetch details of a specific society. Requires `society.settings.view` permission."
+            }
+          },
+          {
+            "name": "Get Members",
+            "request": {
+              "method": "GET",
+              "header": [
+                { "key": "Authorization", "value": "Bearer {{token}}" },
+                { "key": "X-Society-Token", "value": "{{societyId}}" }
+              ],
+              "url": {
+                "raw": "{{baseUrl}}/societies/{{societyId}}/getMembers",
+                "host": ["{{baseUrl}}"],
+                "path": ["societies", "{{societyId}}", "getMembers"]
+              },
+              "description": "List all members of a society. Requires `residents.view` permission."
+            }
+          },
+          {
+            "name": "Assign Member",
+            "request": {
+              "method": "POST",
+              "header": [
+                { "key": "Authorization", "value": "Bearer {{token}}" },
+                { "key": "X-Society-Token", "value": "{{societyId}}" },
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "url": {
+                "raw": "{{baseUrl}}/societies/{{societyId}}/assignMember",
+                "host": ["{{baseUrl}}"],
+                "path": ["societies", "{{societyId}}", "assignMember"]
+              },
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"roleId\": \"{{roleId}}\"\n}",
+                "options": { "raw": { "language": "json" } }
+              },
+              "description": "Assign a role to a user within this society. Requires `roles.assign` permission."
+            }
+          },
+          {
+            "name": "Remove Member",
+            "request": {
+              "method": "DELETE",
+              "header": [
+                { "key": "Authorization", "value": "Bearer {{token}}" },
+                { "key": "X-Society-Token", "value": "{{societyId}}" }
+              ],
+              "url": {
+                "raw": "{{baseUrl}}/societies/{{societyId}}/removeMember/{{userId}}",
+                "host": ["{{baseUrl}}"],
+                "path": ["societies", "{{societyId}}", "removeMember", "{{userId}}"]
+              },
+              "description": "Remove a user from this society. Requires `roles.revoke` permission."
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
