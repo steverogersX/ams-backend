@@ -8,9 +8,9 @@ Express 4 + TypeScript (CommonJS, strict). PostgreSQL via Drizzle ORM. Zod valid
 
 AMS is a **multi-tenant** platform: one deployment hosts many independent **societies**, each with complete data isolation. Every society has its own roles, permissions, users, and resources. The platform enforces RBAC (Role-Based Access Control) at every layer.
 
-- **Isolation**: Society data is structurally scoped; no cross-tenant data bleed.
-- **Permissions**: Code-first RBAC with permission registry, role definitions, and user assignments.
-- **Sessions**: Token-based auth with per-request society selection via header.
+- **Isolation**: Society data is structurally scoped — no cross-tenant data bleed.
+- **Permissions**: Code-first RBAC with a frozen permission registry, society-scoped roles, and user assignments.
+- **Sessions**: Token-based auth with per-request society selection via `X-Society-Token` header.
 
 ## Requirements
 
@@ -23,9 +23,10 @@ AMS is a **multi-tenant** platform: one deployment hosts many independent **soci
 ```bash
 npm install
 cp .env.example .env
-# Update .env with your PostgreSQL connection string
-npm run db:generate  # Generate initial migration
-npm run dev          # Start the server
+# Fill in DATABASE_URL and other vars
+npm run db:migrate   # Apply migrations
+npm run db:seed      # Seed super admin account
+npm run dev          # Start dev server
 ```
 
 ## Scripts
@@ -36,191 +37,165 @@ npm run dev          # Start the server
 | `npm run build`       | Compile TypeScript to `dist/`                         |
 | `npm start`           | Run the compiled build (production)                   |
 | `npm run typecheck`   | Type-check without emitting; **must pass before git** |
-| `npm run format`      | Format code with Prettier (2 spaces, single quotes)   |
+| `npm run format`      | Format with Prettier (2 spaces, single quotes)        |
 | `npm run db:generate` | Generate a new migration from schema changes          |
 | `npm run db:migrate`  | Apply pending migrations to the database              |
+| `npm run db:push`     | Push schema directly to DB (dev only)                 |
 | `npm run db:studio`   | Open Drizzle Studio (visual DB browser)               |
+| `npm run db:seed`     | Seed the super admin account                          |
 
 **Note**: No test runner is configured. Use `npm run typecheck` for validation; create throwaway snippets with `npx tsx` as needed.
 
-## Architecture
+## Environment Variables
 
-### Layered Module Structure
+| Variable                  | Required | Default       | Description                                                                                              |
+| ------------------------- | -------- | ------------- | -------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`            | Yes      | —             | PostgreSQL connection URL                                                                                |
+| `NODE_ENV`                | No       | `development` | `development`, `test`, or `production`                                                                   |
+| `PORT`                    | No       | `3000`        | Server port                                                                                              |
+| `CORS_ORIGIN`             | No       | `*`           | Comma-separated allowed origins or `*`                                                                   |
+| `SESSION_EXPIRES_IN_DAYS` | No       | `30`          | Session TTL in days                                                                                      |
+| `LOG_LEVEL`               | No       | auto          | `fatal` `error` `warn` `info` `debug` `trace` `silent`; defaults to `info` in production, `debug` in dev |
 
-Each feature lives in `src/module/<name>/` with a consistent layer stack:
+All variables are loaded and validated via Zod at startup in `src/config/config.ts`. The server exits immediately if required vars are missing or invalid.
+
+## API Reference
+
+Full collection available on Postman:
+
+[AMS Backend — Postman Workspace](https://www.postman.com/brucewayne-5403656/steverogersx-s-org/overview)
+
+### Base URL
 
 ```
-src/module/<name>/
-  ├── <name>.routes.ts      # Express routes & middleware chain
-  ├── <name>.controller.ts   # HTTP request/response handling (thin)
-  ├── <name>.service.ts      # Business logic (thick)
-  ├── <name>.schema.ts       # Zod validation schemas
-  └── <name>.types.ts        # TypeScript types
+http://localhost:<PORT>/api/v1
 ```
 
-- **Routes** define the endpoint and mount middleware (validation, auth checks).
-- **Controllers** extract data, call services, return responses via `sendSuccess`/`sendError`.
-- **Services** contain all business logic; exported as singletons.
-- **Schemas** define Zod validators for request bodies, query params, etc.
-- **Types** define TypeScript interfaces for domain entities.
+### Auth
 
-### Database Layer
+| Method | Endpoint         | Auth         | Description                              |
+| ------ | ---------------- | ------------ | ---------------------------------------- |
+| POST   | `/auth/register` | —            | Register a new user                      |
+| POST   | `/auth/login`    | —            | Login; returns session token + societies |
+| POST   | `/auth/logout`   | Bearer token | Revoke current session                   |
+| GET    | `/auth/me`       | Bearer token | Get authenticated user's profile         |
 
-PostgreSQL + **Drizzle ORM** for type-safe queries.
+### Societies
 
-- **Schema source of truth**: Tables are defined in `src/db/schema/` (one file per table, plus `relations.ts` and `index.ts`).
-- **Migrations**: Generated from schema via `npm run db:generate`; never edit by hand.
-- **Identifiers**: DB columns are `snake_case`; Drizzle symbols are `camelCase`.
-- **Primary keys**: UUID (`defaultRandom()`); all time columns use `timestamptz`.
+| Method | Endpoint                                     | Auth                       | Permission              |
+| ------ | -------------------------------------------- | -------------------------- | ----------------------- |
+| POST   | `/societies/createSociety`                   | Bearer + super_admin       | —                       |
+| GET    | `/societies/getSocieties`                    | Bearer + super_admin       | —                       |
+| GET    | `/societies/:societyId/getSociety`           | Bearer + `X-Society-Token` | `society.settings.view` |
+| GET    | `/societies/:societyId/getMembers`           | Bearer + `X-Society-Token` | `residents.view`        |
+| POST   | `/societies/:societyId/assignMember`         | Bearer + `X-Society-Token` | `roles.assign`          |
+| DELETE | `/societies/:societyId/removeMember/:userId` | Bearer + `X-Society-Token` | `roles.revoke`          |
 
-### RBAC (Role-Based Access Control)
+### Request Headers
 
-Three-layer model:
-
-1. **Permissions** (code only): Frozen registry in `src/module/rbac/permission.registry.ts`. Each permission is a typed constant (e.g., `Permission.BillingGenerate`).
-2. **Roles** (database, society-scoped): Define which permissions are granted. Each role belongs to exactly one society.
-3. **Assignments** (database): Map users to roles within a society. A user's effective permissions = union of all their roles in that society.
-
-**Key rules**:
-
-- Permissions are code-only; never stored in the database.
-- Roles are always society-scoped; never global.
-- Never check a role name in business logic; always check a permission.
-- Deny by default: routes are inaccessible unless they explicitly require a permission.
-- `super_admin` is a platform-level sentinel (not a society role).
-
-### Middleware & Error Handling
-
-- **Error handler** (`errorHandler.ts`): Catches all thrown errors and formats them into the API response.
-- **Auth middleware** (`authenticate.ts`): Extracts and validates session tokens.
-- **Permission middleware** (`requirePermission.ts`): Enforces permission checks.
-- **Validation middleware** (`validate.ts`): Validates request body/query/params with Zod.
-- **HTTP logging** (`httpLogger.ts`): Pino-based request/response logging.
-
-Errors are **thrown**, not returned. Use `ApiError.*` (from `@/utils/ApiError`) for API failures:
-
-```ts
-throw ApiError.badRequest('Invalid input');
-throw ApiError.unauthorized('Missing token');
-throw ApiError.forbidden('Insufficient permissions');
-throw ApiError.notFound('Resource not found');
-throw ApiError.conflict('Duplicate entry');
-throw ApiError.internal('Server error');
-```
-
-### Environment & Config
-
-All environment variables are loaded and validated in `src/config/config.ts` via Zod. Access config only from that module; **never read `process.env` elsewhere**.
-
-## API Conventions
+| Header            | Required       | Description                                 |
+| ----------------- | -------------- | ------------------------------------------- |
+| `Authorization`   | Most routes    | `Bearer <session_token>`                    |
+| `X-Society-Token` | Society routes | 64-char society token (from login response) |
 
 ### Response Envelope
 
-Every endpoint returns a standard envelope:
+Every endpoint returns:
 
 ```ts
 interface ApiResponse<T> {
   success: boolean;
   statusCode: number;
   message: string;
-  data: T | null; // null on error
-  error: { message: string; code?: string; details?: unknown; stack?: string } | null; // null on success
+  data: T | null;
+  error: { message: string; code?: string; details?: unknown } | null;
   meta: { timestamp: string; [key: string]: unknown };
 }
 ```
 
-**Usage**:
+## Database Schema
+
+PostgreSQL via Drizzle ORM. Schema source of truth is `src/db/schema/`.
+
+| Table              | Description                                                                  |
+| ------------------ | ---------------------------------------------------------------------------- |
+| `users`            | Global user identities. `is_super_admin` is platform-level, not per-society. |
+| `societies`        | Tenants. Each has a unique `token` used as the `X-Society-Token` header.     |
+| `roles`            | Society-scoped roles. 8 system roles are seeded per society on creation.     |
+| `role_permissions` | Stores permission strings per role. No FK to registry — validated in code.   |
+| `user_roles`       | Maps users to roles. Society is derived through the role, never stored.      |
+| `sessions`         | Session tokens stored as SHA-256 hashes. Raw token never persisted.          |
+
+**Conventions**: UUID PKs (`defaultRandom()`), `timestamptz` for all time columns, `snake_case` DB identifiers, `camelCase` Drizzle symbols.
+
+## Architecture
+
+### Module Structure
+
+Each feature lives in `src/module/<name>/`:
+
+```
+src/module/<name>/
+  ├── <name>.routes.ts      # Express routes + middleware chain
+  ├── <name>.controller.ts  # Thin HTTP handlers
+  ├── <name>.service.ts     # Business logic (exported as singleton)
+  ├── <name>.schema.ts      # Zod validation schemas
+  └── <name>.types.ts       # TypeScript interfaces
+```
+
+### Middleware Stack
+
+Applied in order in `app.ts`:
+
+1. `helmet` — Security headers
+2. `cors` — Cross-origin requests
+3. `express.json()` / `express.urlencoded()` — Body parsing
+4. `httpLogger` — Pino-based HTTP logging; generates/reuses `X-Request-Id`; redacts auth headers
+5. Route handlers
+6. `notFound` — Catches unmapped routes → `404`
+7. `errorHandler` — Global error formatter (last)
+
+**Route-level guards:**
+
+- `authenticate` — Validates Bearer token, resolves `X-Society-Token`, loads effective permissions into `req.context`
+- `requireSuperAdmin` — Enforces `req.context.isSuperAdmin`
+- `requirePermission(...permissions)` — All listed permissions must be in `req.context.permissions`
+- `validate(schema)` — Zod validation for `body`, `query`, `params`
+
+### RBAC
+
+Three layers:
+
+1. **Permissions** — 44 typed constants in `src/module/rbac/permission.registry.ts`. Code-only; never in the database. Referenced as `Permission.BillingGenerate`, never as raw strings.
+2. **Roles** — Rows in `roles`, always society-scoped. 8 system roles are auto-created per society: `society_admin`, `resident_owner`, `resident_tenant`, `treasurer`, `secretary`, `guard`, `security_supervisor`, `helpdesk_manager`.
+3. **Assignments** — Rows in `user_roles`. Effective permissions = union of all the user's roles in the current society.
+
+Permission domains: `visitor`, `billing`, `complaints`, `residents`, `notices`, `amenities`, `staff`, `roles`, `society`.
+
+**Rules enforced:**
+
+- Deny by default — a route is inaccessible unless it explicitly declares a permission.
+- Never branch on role names in business logic — always check a permission.
+- `super_admin` is a platform-level sentinel, not a society role.
+
+### Error Handling
+
+Errors are **thrown**, not returned. Use `ApiError.*` factory methods:
 
 ```ts
-// Success
-sendSuccess(res, data, 'Resource created', StatusCodes.CREATED);
-
-// Error (handled by error middleware)
-throw ApiError.badRequest('Validation failed');
+throw ApiError.badRequest('Invalid input'); // 400
+throw ApiError.unauthorized('Missing token'); // 401
+throw ApiError.forbidden('Insufficient perms'); // 403
+throw ApiError.notFound('Resource not found'); // 404
+throw ApiError.conflict('Duplicate entry'); // 409
+throw ApiError.internal('Server error'); // 500
 ```
 
-### Status Codes
-
-Use `StatusCodes` from `http-status-codes` — never hardcoded numbers (e.g., `403`).
-
-### Validation
-
-Use Zod schemas + the `validate` middleware. No manual request parsing in controllers:
-
-```ts
-router.post('/', validate(createUserSchema), createUserController);
-```
-
-Validation errors are formatted with field-level details via `zod-validation-error`.
-
-## Code Guidelines
-
-### TypeScript
-
-- **Strict mode enforced**: No `any`, no `@ts-ignore`, no non-null assertions (`!`).
-- `npm run typecheck` **must pass** before every commit.
-
-### Imports
-
-- Use path alias `@/*` (resolves to `src/`) for internal imports.
-- Never use long relative chains (`../../`).
-
-### Controllers & Services
-
-- **Controllers** are thin: extract data, call a service, return via `sendSuccess`/`sendError`.
-- **Services** are thick: all business logic lives here.
-- Wrap async controllers in `asyncHandler` so rejections reach the error handler.
-
-### Naming
-
-- Files: kebab-case with descriptors (e.g., `role-template.ts`, `item.controller.ts`).
-- Classes & types: PascalCase.
-- Functions & variables: camelCase.
-- Run `npm run format` to enforce Prettier rules (single quotes, 2 spaces, 100 cols, semicolons).
-
-## Git Workflow
-
-### Conventional Commits
-
-Enforced by commitlint:
-
-```
-type(scope): subject
-```
-
-**Types**: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`
-
-**Rules**:
-
-- Subject: lowercase, no trailing period, ≤ 100 chars.
-- One logical change per commit.
-- Never stage the whole tree blindly.
-
-### Branch Naming
-
-Enforced by pre-push hook:
-
-```
-<type>/<short-description>
-```
-
-Examples: `feat/rbac-permissions`, `fix/session-token-validation`, `release/1.0.0`, `hotfix/critical-bug`
-
-Never commit feature work directly to `main`.
-
-### Pre-commit Checks
-
-Hooks enforce:
-
-- Branch name validation
-- Commitlint (message format)
-- `npm run typecheck` (must pass)
-
-**Never bypass hooks** with `--no-verify`. Fix the issue instead.
+The global `errorHandler` middleware catches all thrown errors and formats them into the response envelope. Never call `res.status(...).json(...)` for errors inline.
 
 ## Default Credentials
 
-A platform administrator (super admin) is pre-seeded for local development:
+A platform administrator is pre-seeded by `npm run db:seed` for local development:
 
 | Field    | Value                  |
 | -------- | ---------------------- |
@@ -228,27 +203,39 @@ A platform administrator (super admin) is pre-seeded for local development:
 | Password | `Admin@123`            |
 | Role     | Platform Administrator |
 
-> This account is the software vendor operator. It can create societies but **cannot** access individual society data (members, billing, complaints) — enforced structurally, not by convention.
+> This account is the software vendor operator. It can create societies but **cannot** access individual society data — enforced structurally, not by convention.
 
-## API Reference
+## Git Workflow
 
-The full API collection is available on Postman:
+### Conventional Commits
 
-[AMS Backend — Postman Workspace](https://www.postman.com/brucewayne-5403656/steverogersx-s-org/overview)
-
-## Running the Server
-
-**Development**:
-
-```bash
-npm run dev
+```
+type(scope): subject
 ```
 
-Starts `src/index.ts` in watch mode with tsx. The server listens on the port defined in `.env`.
+**Types**: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`
 
-**Production**:
+Rules: lowercase subject, no trailing period, ≤ 100 chars, one logical change per commit.
 
-```bash
-npm run build    # Compile to dist/
-npm start        # Run dist/index.js
+### Branch Naming
+
 ```
+<type>/<short-description>
+```
+
+Examples: `feat/billing-module`, `fix/session-expiry`, `release/1.0.0`, `hotfix/critical-bug`
+
+Never commit feature work directly to `main`.
+
+### Pre-commit Checks
+
+Hooks enforce branch name validation, commitlint message format, and `npm run typecheck`. **Never bypass with `--no-verify`.**
+
+## Code Guidelines
+
+- **No TypeScript escape hatches** — no `any`, no `@ts-ignore`, no non-null `!`.
+- **Path alias** — use `@/*` for all internal imports; never `../../` chains.
+- **Async controllers** — always wrapped in `asyncHandler`.
+- **HTTP responses** — always via `sendSuccess` / `sendError` from `@/utils/ApiResponse`.
+- **Config** — access only from `@/config`; never read `process.env` elsewhere.
+- **Status codes** — use `StatusCodes` from `http-status-codes`; never magic numbers.
