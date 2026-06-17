@@ -230,6 +230,12 @@ A platform administrator (super admin) is pre-seeded for local development:
 
 > This account is the software vendor operator. It can create societies but **cannot** access individual society data (members, billing, complaints) — enforced structurally, not by convention.
 
+## API Reference
+
+The full API collection is available on Postman:
+
+[AMS Backend — Postman Workspace](https://www.postman.com/brucewayne-5403656/steverogersx-s-org/overview)
+
 ## Running the Server
 
 **Development**:
