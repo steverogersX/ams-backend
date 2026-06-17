@@ -2,7 +2,7 @@ import type { NextFunction, Request, RequestHandler, Response } from 'express';
 import { ApiError } from '@/utils/ApiError';
 import type { PermissionDefinition } from '@/module/rbac/permission.definition';
 
-export function requirePermission(permission: PermissionDefinition): RequestHandler {
+export function requirePermission(...permissions: PermissionDefinition[]): RequestHandler {
   return (_req: Request, _res: Response, next: NextFunction): void => {
     const ctx = _req.context;
     if (!ctx) {
@@ -12,17 +12,12 @@ export function requirePermission(permission: PermissionDefinition): RequestHand
       return;
     }
 
-    if (ctx.isSuperAdmin) {
-      next();
-      return;
-    }
-
     if (!ctx.societyId) {
       next(ApiError.forbidden('Society context required'));
       return;
     }
 
-    if (!ctx.permissions.has(permission.name)) {
+    if (!permissions.every((p) => ctx.permissions.has(p.name))) {
       next(ApiError.forbidden());
       return;
     }

@@ -38,6 +38,8 @@ npm run dev          # Start the server
 | `npm run typecheck`   | Type-check without emitting; **must pass before git** |
 | `npm run format`      | Format code with Prettier (2 spaces, single quotes)   |
 | `npm run db:generate` | Generate a new migration from schema changes          |
+| `npm run db:migrate`  | Apply pending migrations to the database              |
+| `npm run db:studio`   | Open Drizzle Studio (visual DB browser)               |
 
 **Note**: No test runner is configured. Use `npm run typecheck` for validation; create throwaway snippets with `npx tsx` as needed.
 
@@ -215,6 +217,18 @@ Hooks enforce:
 - `npm run typecheck` (must pass)
 
 **Never bypass hooks** with `--no-verify`. Fix the issue instead.
+
+## Default Credentials
+
+A platform administrator (super admin) is pre-seeded for local development:
+
+| Field    | Value                  |
+| -------- | ---------------------- |
+| Email    | `admin@ams.local`      |
+| Password | `Admin@123`            |
+| Role     | Platform Administrator |
+
+> This account is the software vendor operator. It can create societies but **cannot** access individual society data (members, billing, complaints) — enforced structurally, not by convention.
 
 ## Running the Server
 

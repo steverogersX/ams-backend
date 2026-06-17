@@ -12,7 +12,8 @@ import { sessions } from './sessions';
  * table definitions.
  */
 
-export const societiesRelations = relations(societies, ({ many }) => ({
+export const societiesRelations = relations(societies, ({ one, many }) => ({
+  createdBy: one(users, { fields: [societies.createdBy], references: [users.id] }),
   roles: many(roles),
 }));
 
