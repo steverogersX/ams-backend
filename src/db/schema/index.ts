@@ -8,4 +8,7 @@ export * from './roles';
 export * from './role-permissions';
 export * from './user-roles';
 export * from './sessions';
+export * from './apartments';
+export * from './flats';
+export * from './complaints';
 export * from './relations';
