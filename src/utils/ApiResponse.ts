@@ -5,7 +5,6 @@ export interface ApiResponseError {
   message: string;
   code?: string;
   details?: unknown;
-  stack?: string;
 }
 
 export interface ApiResponseMeta {
@@ -32,7 +31,6 @@ interface ErrorOptions {
   statusCode?: number;
   code?: string;
   details?: unknown;
-  stack?: string;
   meta?: Record<string, unknown>;
 }
 
@@ -59,7 +57,6 @@ export function sendError(res: Response, message: string, options: ErrorOptions 
     message,
     ...(options.code !== undefined ? { code: options.code } : {}),
     ...(options.details !== undefined ? { details: options.details } : {}),
-    ...(options.stack !== undefined ? { stack: options.stack } : {}),
   };
   const body: ApiResponse<null> = {
     success: false,

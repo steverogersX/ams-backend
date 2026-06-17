@@ -4,7 +4,6 @@ import { StatusCodes } from 'http-status-codes';
 import { fromZodError } from 'zod-validation-error';
 import { ApiError } from '@/utils/ApiError';
 import { sendError } from '@/utils/ApiResponse';
-import { config } from '@/config';
 import { logger } from '@/utils/logger';
 
 export function errorHandler(
@@ -36,6 +35,5 @@ export function errorHandler(
   sendError(res, message, {
     statusCode,
     details,
-    stack: config.isProduction || !(err instanceof Error) ? undefined : err.stack,
   });
 }
