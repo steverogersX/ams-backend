@@ -99,7 +99,22 @@ The RBAC model has three layers: **Permissions** (code) → **Roles** (DB, socie
 9. **`super_admin`** is a platform-level sentinel (all permissions, not society-scoped) and is never
    seeded as a society role row. Do not make it editable/deletable.
 
-## 6. Hard rules — git
+## 6. Hard rules — UI
+
+1. **Tailwind CSS only.** All styling goes through Tailwind utility classes. No plain CSS files,
+   CSS-in-JS, or inline `style={}` objects unless Tailwind genuinely cannot express it.
+2. **shadcn/ui first.** Before writing any component, check if shadcn/ui already provides it. Use the
+   shadcn CLI to add it rather than hand-rolling. If an existing shadcn component can be tweaked
+   (variant, className override, composition) to fit the need, do that instead of writing a new one.
+3. **Build from scratch only as a last resort.** Only write a component from scratch when no shadcn/ui
+   primitive exists and none can reasonably be composed/tweaked to fit.
+4. **Good React patterns.** Functional components + hooks, single-responsibility components, lift
+   state only as far as needed, derive state instead of duplicating it, keep props typed and minimal.
+   Avoid prop-drilling beyond 2-3 levels — use composition or context where appropriate.
+5. **No comments.** Do not comment component code. Only add a comment when the _why_ is genuinely
+   non-obvious (e.g. a workaround for a library bug); never comment what the code already says.
+
+## 7. Hard rules — git
 
 1. **Conventional Commits**, enforced by commitlint. `type(scope): subject` — types: `feat, fix, docs,
 style, refactor, perf, test, build, ci, chore, revert`. Subject lowercase, no trailing period,
@@ -111,7 +126,7 @@ style, refactor, perf, test, build, ci, chore, revert`. Subject lowercase, no tr
 4. **Never bypass hooks.** No `--no-verify`. If commitlint/branch-check/typecheck fails, fix the cause.
 5. **Commit or push only when asked.** Do not push or open PRs unprompted.
 
-## 7. Never do
+## 8. Never do
 
 - Read `process.env` outside the config module.
 - Use raw permission strings or role-name checks.
