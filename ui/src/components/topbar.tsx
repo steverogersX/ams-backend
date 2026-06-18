@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { Bell, Check, ChevronDown, Menu } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +18,7 @@ import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { SidebarContent } from "@/components/sidebar";
 import { SocietyLogo } from "@/components/societyLogo";
 import { ModeToggle } from "@/components/modeToggle";
+import { AccountMenu } from "@/components/accountMenu";
 import { getInitials } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -108,32 +108,13 @@ export function Topbar() {
           <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-red-500" />
         </Button>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger render={<button className="ml-1 rounded-full" />}>
-            <Avatar className="size-7">
-              <AvatarFallback className="text-xs">{getInitials(displayName)}</AvatarFallback>
-            </Avatar>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuGroup>
-              <DropdownMenuLabel>
-                <div className="flex flex-col gap-0.5">
-                  <span className="font-medium text-foreground">{displayName}</span>
-                  <span className="truncate text-xs text-muted-foreground">
-                    {roles.length ? roles.join(", ") : "No role in this society"}
-                  </span>
-                </div>
-              </DropdownMenuLabel>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Profile settings</DropdownMenuItem>
-            <DropdownMenuItem>Switch account</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive" onClick={handleSignOut}>
-              Sign out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <AccountMenu
+          name={displayName}
+          email={user?.email}
+          badges={roles.length ? roles : ["No role in this society"]}
+          onSignOut={handleSignOut}
+          extraItems={<DropdownMenuItem className="gap-2 py-1.5">Switch account</DropdownMenuItem>}
+        />
       </div>
     </header>
   );

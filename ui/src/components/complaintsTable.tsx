@@ -31,7 +31,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Complaint, ComplaintPriority, ComplaintStatus, complaints } from "@/lib/mockData";
+import { ComplaintPriority, ComplaintStatus, complaints } from "@/lib/mockData";
+
+export type ComplaintRow = {
+  id: string;
+  ticketNumber: string;
+  title: string;
+  category: string;
+  status: ComplaintStatus;
+  priority: ComplaintPriority;
+  createdAt: string;
+  societyName?: string;
+  assignedTo?: { name: string; initials: string } | null;
+};
 
 const STATUS_DOT: Record<ComplaintStatus, string> = {
   open: "bg-blue-500",
@@ -60,7 +72,7 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
 }
 
-const columns: ColumnDef<Complaint>[] = [
+const columns: ColumnDef<ComplaintRow>[] = [
   {
     accessorKey: "ticketNumber",
     header: ({ column }) => (
@@ -84,6 +96,14 @@ const columns: ColumnDef<Complaint>[] = [
         <span className="truncate font-medium text-foreground">{row.original.title}</span>
         <span className="truncate text-xs text-muted-foreground">{row.original.category}</span>
       </div>
+    ),
+  },
+  {
+    id: "societyName",
+    accessorKey: "societyName",
+    header: () => <DataTableColumnHeader label="Society" />,
+    cell: ({ row }) => (
+      <span className="whitespace-nowrap text-foreground">{row.original.societyName}</span>
     ),
   },
   {
@@ -158,22 +178,42 @@ const STATUS_FILTERS: { label: string; value: ComplaintStatus | "all" }[] = [
   { label: "Escalated", value: "escalated" },
 ];
 
-export function ComplaintsTable({ compact = false }: { compact?: boolean }) {
+export function ComplaintsTable({
+  data: dataProp,
+  title = "Recent complaints",
+  compact = false,
+  showSociety = false,
+  showAssignee = true,
+  showPageSize = false,
+}: {
+  data?: ComplaintRow[];
+  title?: string;
+  compact?: boolean;
+  showSociety?: boolean;
+  showAssignee?: boolean;
+  showPageSize?: boolean;
+}) {
   const [sorting, setSorting] = React.useState<SortingState>(
     compact ? [] : [{ id: "createdAt", desc: true }],
   );
   const [statusFilter, setStatusFilter] = React.useState<ComplaintStatus | "all">("all");
 
+  const source = dataProp ?? complaints;
+
   const data = React.useMemo(
-    () =>
-      statusFilter === "all" ? complaints : complaints.filter((c) => c.status === statusFilter),
-    [statusFilter],
+    () => (statusFilter === "all" ? source : source.filter((c) => c.status === statusFilter)),
+    [source, statusFilter],
   );
 
   const visibleColumns = React.useMemo(
     () =>
-      compact ? columns.filter((c) => c.id !== "createdAt" && c.id !== "assignedTo") : columns,
-    [compact],
+      columns.filter((c) => {
+        if (compact && (c.id === "createdAt" || c.id === "assignedTo")) return false;
+        if (c.id === "societyName") return showSociety;
+        if (c.id === "assignedTo") return showAssignee;
+        return true;
+      }),
+    [compact, showSociety, showAssignee],
   );
 
   const table = useReactTable({
@@ -184,7 +224,7 @@ export function ComplaintsTable({ compact = false }: { compact?: boolean }) {
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    initialState: { pagination: { pageSize: 5 } },
+    initialState: { pagination: { pageSize: compact ? 5 : 8 } },
   });
 
   const activeFilterLabel =
@@ -193,7 +233,7 @@ export function ComplaintsTable({ compact = false }: { compact?: boolean }) {
   return (
     <div className="overflow-hidden rounded-md border border-border bg-card">
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
-        <h3 className="text-sm font-semibold text-foreground">Recent complaints</h3>
+        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
         <DropdownMenu>
           <DropdownMenuTrigger render={<Button variant="outline" size="sm" className="gap-1.5" />}>
             <ListFilter className="size-3.5" />
@@ -238,7 +278,7 @@ export function ComplaintsTable({ compact = false }: { compact?: boolean }) {
           ) : (
             <TableRow className="hover:bg-transparent">
               <TableCell
-                colSpan={columns.length}
+                colSpan={visibleColumns.length}
                 className="h-24 text-center text-sm text-muted-foreground"
               >
                 No complaints match this filter.
@@ -248,7 +288,7 @@ export function ComplaintsTable({ compact = false }: { compact?: boolean }) {
         </TableBody>
       </Table>
 
-      <DataTablePagination table={table} itemLabel="complaint" />
+      <DataTablePagination table={table} itemLabel="complaint" showPageSize={showPageSize} />
     </div>
   );
 }
