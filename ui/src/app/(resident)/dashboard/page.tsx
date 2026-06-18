@@ -1,4 +1,5 @@
 import { Greeting } from "@/components/greeting";
+import { ActivityFeed } from "@/components/activity-feed";
 import { BillsChart } from "@/components/bills-chart";
 import { ComplaintStatusChart } from "@/components/complaint-status-chart";
 import { ComplaintsTable } from "@/components/complaints-table";
@@ -14,6 +15,8 @@ export default function DashboardPage() {
         name={firstName}
         subtitle={`Here's what's happening at Flat ${currentFlat.flatNumber}, ${currentFlat.apartmentName} today.`}
       />
+
+      <ActivityFeed />
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
         <BillsChart />
