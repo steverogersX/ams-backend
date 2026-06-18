@@ -22,13 +22,18 @@ import {
   Bird,
 } from "lucide-react";
 
+import type { PermissionKey } from "@shared/index";
+
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
 
 type NavItem = {
   label: string;
   href?: string;
   icon: React.ComponentType<{ className?: string }>;
   soon?: boolean;
+  /** Omit for items everyone with access to this dashboard should see; set to gate on a frozen registry key. */
+  permission?: PermissionKey;
 };
 
 export type { NavItem };
@@ -118,6 +123,10 @@ export function SidebarContent({
   moreLabel?: string;
   brand?: React.ReactNode;
 }) {
+  const { has } = useAuth();
+  const visibleNavItems = navItems.filter((item) => !item.permission || has(item.permission));
+  const visibleSoonItems = soonItems.filter((item) => !item.permission || has(item.permission));
+
   return (
     <div className="flex h-full flex-col">
       <div
@@ -141,16 +150,16 @@ export function SidebarContent({
         )}
       >
         <SectionLabel collapsed={collapsed}>{menuLabel}</SectionLabel>
-        {navItems.map((item) => (
+        {visibleNavItems.map((item) => (
           <NavLink key={item.label} item={item} collapsed={collapsed} />
         ))}
 
-        {soonItems.length > 0 && (
+        {visibleSoonItems.length > 0 && (
           <>
             <div className="pt-3">
               <SectionLabel collapsed={collapsed}>{moreLabel}</SectionLabel>
             </div>
-            {soonItems.map((item) => (
+            {visibleSoonItems.map((item) => (
               <NavLink key={item.label} item={item} collapsed={collapsed} />
             ))}
           </>

@@ -12,6 +12,21 @@ AMS is a **multi-tenant** platform: one deployment hosts many independent **soci
 - **Permissions**: Code-first RBAC with a frozen permission registry, society-scoped roles, and user assignments.
 - **Sessions**: Token-based auth with per-request society selection via `X-Society-Token` header.
 
+## Project Structure
+
+```
+.
+├── src/          # Backend source (this README)
+├── shared/        # Types shared between backend and UI
+├── ui/           # Next.js frontend — see ui/README.md
+├── drizzle/      # Generated DB migrations
+└── docs/         # Additional documentation
+```
+
+The frontend lives in [`ui/`](ui/README.md) and talks to this API over HTTP. Run them side by side
+for local development — this server defaults to `PORT=3000`; the UI's `NEXT_PUBLIC_API_URL`
+defaults to `http://localhost:5000/api/v1`, so set one of the two ports explicitly to match.
+
 ## Requirements
 
 - Node.js 20+
