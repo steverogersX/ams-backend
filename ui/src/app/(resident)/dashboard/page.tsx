@@ -1,3 +1,5 @@
+"use client";
+
 import { Greeting } from "@/components/greeting";
 import { ActivityFeed } from "@/components/activityFeed";
 import { BillsChart } from "@/components/billsChart";
@@ -5,9 +7,11 @@ import { ComplaintStatusChart } from "@/components/complaintStatusChart";
 import { ComplaintsTable } from "@/components/complaintsTable";
 import { NoticesFeed } from "@/components/noticesFeed";
 import { currentFlat } from "@/lib/mockData";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function DashboardPage() {
-  const firstName = currentFlat.ownerName.split(" ")[0];
+  const { user } = useAuth();
+  const firstName = (user?.displayName ?? currentFlat.ownerName).split(" ")[0];
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-5">
