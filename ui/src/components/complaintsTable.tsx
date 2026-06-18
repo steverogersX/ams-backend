@@ -1,36 +1,13 @@
 "use client";
 
 import * as React from "react";
-import {
-  ColumnDef,
-  flexRender,
-  getCoreRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  SortingState,
-  useReactTable,
-} from "@tanstack/react-table";
-import { ArrowDown, ArrowRight, ArrowUp, ListFilter } from "lucide-react";
+import type { ColumnDef } from "@tanstack/react-table";
+import { ArrowDown, ArrowRight, ArrowUp } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { DataTable, type DataTableFilterConfig } from "@/components/dataTable";
 import { DataTableColumnHeader } from "@/components/dataTableColumnHeader";
-import { DataTablePagination } from "@/components/dataTablePagination";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { ComplaintPriority, ComplaintStatus, complaints } from "@/lib/mockData";
 
 export type ComplaintRow = {
@@ -72,112 +49,6 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
 }
 
-const columns: ColumnDef<ComplaintRow>[] = [
-  {
-    accessorKey: "ticketNumber",
-    header: ({ column }) => (
-      <DataTableColumnHeader
-        label="Ticket"
-        sorted={column.getIsSorted()}
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      />
-    ),
-    cell: ({ row }) => (
-      <span className="font-mono text-xs font-medium tabular-nums text-foreground">
-        {row.original.ticketNumber}
-      </span>
-    ),
-  },
-  {
-    accessorKey: "title",
-    header: () => <DataTableColumnHeader label="Issue" />,
-    cell: ({ row }) => (
-      <div className="flex min-w-0 max-w-[240px] flex-col">
-        <span className="truncate font-medium text-foreground">{row.original.title}</span>
-        <span className="truncate text-xs text-muted-foreground">{row.original.category}</span>
-      </div>
-    ),
-  },
-  {
-    id: "societyName",
-    accessorKey: "societyName",
-    header: () => <DataTableColumnHeader label="Society" />,
-    cell: ({ row }) => (
-      <span className="whitespace-nowrap text-foreground">{row.original.societyName}</span>
-    ),
-  },
-  {
-    accessorKey: "status",
-    header: () => <DataTableColumnHeader label="Status" />,
-    cell: ({ row }) => {
-      const status = row.original.status;
-      return (
-        <div className="flex items-center gap-2">
-          <span className={cn("size-1.5 shrink-0 rounded-full", STATUS_DOT[status])} />
-          <span className="whitespace-nowrap text-foreground">{STATUS_LABEL[status]}</span>
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "priority",
-    header: () => <DataTableColumnHeader label="Priority" />,
-    cell: ({ row }) => {
-      const meta = PRIORITY_META[row.original.priority];
-      const Icon = meta.icon;
-      return (
-        <div className={cn("flex items-center gap-1.5 font-medium", meta.color)}>
-          <Icon className="size-3.5" />
-          {meta.label}
-        </div>
-      );
-    },
-  },
-  {
-    id: "createdAt",
-    accessorKey: "createdAt",
-    header: ({ column }) => (
-      <DataTableColumnHeader
-        label="Raised"
-        sorted={column.getIsSorted()}
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      />
-    ),
-    cell: ({ row }) => (
-      <span className="whitespace-nowrap text-muted-foreground">
-        {formatDate(row.original.createdAt)}
-      </span>
-    ),
-  },
-  {
-    id: "assignedTo",
-    accessorKey: "assignedTo",
-    header: () => <DataTableColumnHeader label="Assigned to" />,
-    cell: ({ row }) => {
-      const assignee = row.original.assignedTo;
-      if (!assignee) {
-        return <span className="whitespace-nowrap text-muted-foreground">Unassigned</span>;
-      }
-      return (
-        <div className="flex items-center gap-2">
-          <Avatar size="sm">
-            <AvatarFallback className="text-[10px]">{assignee.initials}</AvatarFallback>
-          </Avatar>
-          <span className="whitespace-nowrap text-foreground">{assignee.name}</span>
-        </div>
-      );
-    },
-  },
-];
-
-const STATUS_FILTERS: { label: string; value: ComplaintStatus | "all" }[] = [
-  { label: "All statuses", value: "all" },
-  { label: "Open", value: "open" },
-  { label: "In progress", value: "in_progress" },
-  { label: "Resolved", value: "resolved" },
-  { label: "Escalated", value: "escalated" },
-];
-
 export function ComplaintsTable({
   data: dataProp,
   title = "Recent complaints",
@@ -193,102 +64,150 @@ export function ComplaintsTable({
   showAssignee?: boolean;
   showPageSize?: boolean;
 }) {
-  const [sorting, setSorting] = React.useState<SortingState>(
-    compact ? [] : [{ id: "createdAt", desc: true }],
-  );
-  const [statusFilter, setStatusFilter] = React.useState<ComplaintStatus | "all">("all");
-
   const source = dataProp ?? complaints;
 
-  const data = React.useMemo(
-    () => (statusFilter === "all" ? source : source.filter((c) => c.status === statusFilter)),
-    [source, statusFilter],
+  const columns = React.useMemo<ColumnDef<ComplaintRow>[]>(() => {
+    const all: ColumnDef<ComplaintRow>[] = [
+      {
+        id: "ticketNumber",
+        accessorKey: "ticketNumber",
+        header: ({ column }) => (
+          <DataTableColumnHeader
+            label="Ticket"
+            sorted={column.getIsSorted()}
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          />
+        ),
+        cell: ({ row }) => (
+          <span className="font-mono text-xs font-medium tabular-nums text-foreground">
+            {row.original.ticketNumber}
+          </span>
+        ),
+      },
+      {
+        id: "title",
+        accessorKey: "title",
+        header: () => <DataTableColumnHeader label="Issue" />,
+        cell: ({ row }) => (
+          <div className="flex min-w-0 max-w-[240px] flex-col">
+            <span className="truncate font-medium text-foreground">{row.original.title}</span>
+            <span className="truncate text-xs text-muted-foreground">{row.original.category}</span>
+          </div>
+        ),
+      },
+      {
+        id: "societyName",
+        accessorKey: "societyName",
+        header: () => <DataTableColumnHeader label="Society" />,
+        cell: ({ row }) => (
+          <span className="whitespace-nowrap text-foreground">{row.original.societyName}</span>
+        ),
+      },
+      {
+        id: "status",
+        accessorKey: "status",
+        meta: { label: "Status" },
+        header: () => <DataTableColumnHeader label="Status" />,
+        cell: ({ row }) => {
+          const status = row.original.status;
+          return (
+            <div className="flex items-center gap-2">
+              <span className={cn("size-1.5 shrink-0 rounded-full", STATUS_DOT[status])} />
+              <span className="whitespace-nowrap text-foreground">{STATUS_LABEL[status]}</span>
+            </div>
+          );
+        },
+      },
+      {
+        id: "priority",
+        accessorKey: "priority",
+        meta: { label: "Priority" },
+        header: () => <DataTableColumnHeader label="Priority" />,
+        cell: ({ row }) => {
+          const meta = PRIORITY_META[row.original.priority];
+          const Icon = meta.icon;
+          return (
+            <div className={cn("flex items-center gap-1.5 font-medium", meta.color)}>
+              <Icon className="size-3.5" />
+              {meta.label}
+            </div>
+          );
+        },
+      },
+      {
+        id: "createdAt",
+        accessorKey: "createdAt",
+        meta: { label: "Raised" },
+        header: ({ column }) => (
+          <DataTableColumnHeader
+            label="Raised"
+            sorted={column.getIsSorted()}
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          />
+        ),
+        cell: ({ row }) => (
+          <span className="whitespace-nowrap text-muted-foreground">
+            {formatDate(row.original.createdAt)}
+          </span>
+        ),
+      },
+      {
+        id: "assignedTo",
+        accessorKey: "assignedTo",
+        meta: { label: "Assigned to" },
+        header: () => <DataTableColumnHeader label="Assigned to" />,
+        cell: ({ row }) => {
+          const assignee = row.original.assignedTo;
+          if (!assignee) {
+            return <span className="whitespace-nowrap text-muted-foreground">Unassigned</span>;
+          }
+          return (
+            <div className="flex items-center gap-2">
+              <Avatar size="sm">
+                <AvatarFallback className="text-[10px]">{assignee.initials}</AvatarFallback>
+              </Avatar>
+              <span className="whitespace-nowrap text-foreground">{assignee.name}</span>
+            </div>
+          );
+        },
+      },
+    ];
+
+    return all.filter((c) => {
+      if (compact && (c.id === "createdAt" || c.id === "assignedTo")) return false;
+      if (c.id === "societyName") return showSociety;
+      if (c.id === "assignedTo") return showAssignee;
+      return true;
+    });
+  }, [compact, showSociety, showAssignee]);
+
+  const filters = React.useMemo<DataTableFilterConfig<ComplaintRow>[]>(
+    () => [
+      {
+        id: "status",
+        label: "Status",
+        type: "select",
+        options: (["open", "in_progress", "resolved", "escalated"] as ComplaintStatus[]).map((s) => ({
+          label: STATUS_LABEL[s],
+          value: s,
+        })),
+        predicate: (row, value) => row.status === value,
+      },
+    ],
+    [],
   );
-
-  const visibleColumns = React.useMemo(
-    () =>
-      columns.filter((c) => {
-        if (compact && (c.id === "createdAt" || c.id === "assignedTo")) return false;
-        if (c.id === "societyName") return showSociety;
-        if (c.id === "assignedTo") return showAssignee;
-        return true;
-      }),
-    [compact, showSociety, showAssignee],
-  );
-
-  const table = useReactTable({
-    data,
-    columns: visibleColumns,
-    state: { sorting },
-    onSortingChange: setSorting,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    initialState: { pagination: { pageSize: compact ? 5 : 8 } },
-  });
-
-  const activeFilterLabel =
-    STATUS_FILTERS.find((f) => f.value === statusFilter)?.label ?? "All statuses";
 
   return (
-    <div className="overflow-hidden rounded-md border border-border bg-card">
-      <div className="flex items-center justify-between border-b border-border px-4 py-3">
-        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
-        <DropdownMenu>
-          <DropdownMenuTrigger render={<Button variant="outline" size="sm" className="gap-1.5" />}>
-            <ListFilter className="size-3.5" />
-            {activeFilterLabel}
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {STATUS_FILTERS.map((f) => (
-              <DropdownMenuItem key={f.value} onClick={() => setStatusFilter(f.value)}>
-                {f.label}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="border-border hover:bg-transparent">
-              {headerGroup.headers.map((header) => (
-                <TableHead
-                  key={header.id}
-                  className="h-9 bg-muted/40 px-4 text-xs first:pl-4 last:pr-4"
-                >
-                  {flexRender(header.column.columnDef.header, header.getContext())}
-                </TableHead>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows.length ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id} className="cursor-pointer border-border hover:bg-muted/50">
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} className="px-4 py-3 align-middle text-sm">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))
-          ) : (
-            <TableRow className="hover:bg-transparent">
-              <TableCell
-                colSpan={visibleColumns.length}
-                className="h-24 text-center text-sm text-muted-foreground"
-              >
-                No complaints match this filter.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-
-      <DataTablePagination table={table} itemLabel="complaint" showPageSize={showPageSize} />
-    </div>
+    <DataTable
+      data={source}
+      columns={columns}
+      title={title}
+      filters={filters}
+      showPageSize={showPageSize}
+      pageSize={compact ? 5 : 8}
+      itemLabel="complaint"
+      emptyMessage="No complaints match this filter."
+      initialSorting={compact ? [] : [{ id: "createdAt", desc: true }]}
+    />
   );
 }

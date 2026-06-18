@@ -10,6 +10,7 @@ import {
   Ticket,
   Car,
   UserCheck,
+  Users,
   Sofa,
   Megaphone,
   HandHelping,
@@ -41,6 +42,7 @@ const defaultNavItems: NavItem[] = [
   { label: "Visitors", href: "/dashboard/visitors", icon: UserCheck },
   { label: "Amenities", href: "/dashboard/amenities", icon: Sofa },
   { label: "Notices", href: "/dashboard/notices", icon: Megaphone },
+  { label: "Users", href: "/dashboard/users", icon: Users },
 ];
 
 const defaultSoonItems: NavItem[] = [
