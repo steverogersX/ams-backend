@@ -1,25 +1,6 @@
 import type { Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-
-export interface ApiResponseError {
-  message: string;
-  code?: string;
-  details?: unknown;
-}
-
-export interface ApiResponseMeta {
-  timestamp: string;
-  [key: string]: unknown;
-}
-
-export interface ApiResponse<T = unknown> {
-  success: boolean;
-  statusCode: number;
-  message: string;
-  data: T | null;
-  error: ApiResponseError | null;
-  meta: ApiResponseMeta;
-}
+import type { ApiResponse, ApiResponseError, ApiResponseMeta } from '@shared/index';
 
 interface SuccessOptions {
   statusCode?: number;
