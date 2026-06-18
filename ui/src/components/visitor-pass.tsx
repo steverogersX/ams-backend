@@ -58,10 +58,7 @@ function Detail({
           {label}
         </span>
         <span
-          className={cn(
-            "truncate text-[13px] font-medium text-foreground",
-            mono && "font-mono",
-          )}
+          className={cn("truncate text-[13px] font-medium text-foreground", mono && "font-mono")}
         >
           {value}
         </span>

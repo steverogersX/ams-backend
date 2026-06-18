@@ -55,8 +55,8 @@ export default function LoginPage() {
             Run your society, beautifully.
           </h1>
           <p className="max-w-sm text-sm leading-relaxed text-background/70">
-            A focused dashboard for every role — residents, the management committee, and
-            security each get the tools built for their job.
+            A focused dashboard for every role — residents, the management committee, and security
+            each get the tools built for their job.
           </p>
 
           <div className="flex flex-col gap-3 pt-2">
@@ -71,7 +71,9 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <p className="text-xs text-background/50">© {new Date().getFullYear()} Rooster. All rights reserved.</p>
+        <p className="text-xs text-background/50">
+          © {new Date().getFullYear()} Rooster. All rights reserved.
+        </p>
       </div>
 
       {/* Form panel */}

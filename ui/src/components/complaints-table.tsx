@@ -171,7 +171,8 @@ export function ComplaintsTable({ compact = false }: { compact?: boolean }) {
   );
 
   const visibleColumns = React.useMemo(
-    () => (compact ? columns.filter((c) => c.id !== "createdAt" && c.id !== "assignedTo") : columns),
+    () =>
+      compact ? columns.filter((c) => c.id !== "createdAt" && c.id !== "assignedTo") : columns,
     [compact],
   );
 

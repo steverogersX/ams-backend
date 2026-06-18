@@ -62,7 +62,11 @@ const STATUS_META: Record<
 > = {
   expected: { label: "Expected", color: "text-blue-600 dark:text-blue-400", icon: Clock },
   entered: { label: "Inside", color: "text-amber-600 dark:text-amber-400", icon: DoorOpen },
-  completed: { label: "Completed", color: "text-emerald-600 dark:text-emerald-400", icon: CircleCheck },
+  completed: {
+    label: "Completed",
+    color: "text-emerald-600 dark:text-emerald-400",
+    icon: CircleCheck,
+  },
   denied: { label: "Denied", color: "text-red-600 dark:text-red-400", icon: CircleX },
   expired: { label: "Expired", color: "text-muted-foreground", icon: CircleSlash },
 };

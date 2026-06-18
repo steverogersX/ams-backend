@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import * as React from 'react';
+import * as React from "react";
 
 function subscribe(callback: () => void) {
   const id = setTimeout(callback, 0);

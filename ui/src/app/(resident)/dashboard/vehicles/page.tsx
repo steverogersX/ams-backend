@@ -14,9 +14,7 @@ export default function VehiclesPage() {
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-5">
       <div>
-        <h1 className="text-lg font-semibold tracking-tight text-foreground">
-          Vehicles & Parking
-        </h1>
+        <h1 className="text-lg font-semibold tracking-tight text-foreground">Vehicles & Parking</h1>
         <p className="text-sm text-muted-foreground">Registered vehicles for Flat 304.</p>
       </div>
 

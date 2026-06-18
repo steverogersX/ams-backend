@@ -10,7 +10,10 @@ const KIND_META: Record<
 > = {
   maintenance: { icon: Droplets, className: "bg-blue-500/10 text-blue-600 dark:text-blue-400" },
   event: { icon: CalendarDays, className: "bg-violet-500/10 text-violet-600 dark:text-violet-400" },
-  feature: { icon: Sparkles, className: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" },
+  feature: {
+    icon: Sparkles,
+    className: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+  },
   general: { icon: Info, className: "bg-muted text-muted-foreground" },
 };
 

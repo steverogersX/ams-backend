@@ -26,10 +26,7 @@ type ActivityEntry = {
   primary: string;
   secondary: string;
   timeLabel: string;
-} & (
-  | { kind: "visitor"; name: string }
-  | { kind: "complaint"; status: ComplaintStatus }
-);
+} & ({ kind: "visitor"; name: string } | { kind: "complaint"; status: ComplaintStatus });
 
 function describeVisitor(v: (typeof visitors_log)[number], now: number): ActivityEntry {
   const dt = new Date(`${v.date}T${v.time}:00`);
@@ -93,7 +90,9 @@ function ActivityIcon({ entry }: { entry: ActivityEntry }) {
   const meta = COMPLAINT_STATUS_META[entry.status];
   const Icon = meta.icon;
   return (
-    <span className={cn("flex size-8 shrink-0 items-center justify-center rounded-md", meta.className)}>
+    <span
+      className={cn("flex size-8 shrink-0 items-center justify-center rounded-md", meta.className)}
+    >
       <Icon className="size-4" />
     </span>
   );

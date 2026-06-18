@@ -32,9 +32,7 @@ const PRESETS = [
 
 const today = new Date();
 
-type Selection =
-  | { mode: "preset"; months: number }
-  | { mode: "custom"; range: DateRange };
+type Selection = { mode: "preset"; months: number } | { mode: "custom"; range: DateRange };
 
 function rupees(value: number) {
   return `₹${value.toLocaleString("en-IN")}`;
@@ -98,9 +96,7 @@ export function BillsChart() {
         </div>
 
         <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger
-            render={<Button variant="outline" size="sm" className="gap-1.5" />}
-          >
+          <PopoverTrigger render={<Button variant="outline" size="sm" className="gap-1.5" />}>
             <CalendarDays className="size-3.5" />
             {label}
             <ChevronDown className="size-3.5 text-muted-foreground" />
@@ -150,10 +146,19 @@ export function BillsChart() {
 
       <div className="flex flex-1 flex-col px-4 py-4">
         {data.length > 0 ? (
-          <ChartContainer config={chartConfig} className="aspect-auto h-full min-h-56 w-full flex-1">
+          <ChartContainer
+            config={chartConfig}
+            className="aspect-auto h-full min-h-56 w-full flex-1"
+          >
             <BarChart data={data} barGap={4} barCategoryGap={data.length <= 2 ? "40%" : 20}>
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
-              <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} fontSize={12} />
+              <XAxis
+                dataKey="month"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                fontSize={12}
+              />
               <YAxis
                 tickLine={false}
                 axisLine={false}
@@ -165,7 +170,10 @@ export function BillsChart() {
               <ChartTooltip
                 content={
                   <ChartTooltipContent
-                    formatter={(value, name) => [rupees(Number(value)), name === "paid" ? "Paid" : "Due"]}
+                    formatter={(value, name) => [
+                      rupees(Number(value)),
+                      name === "paid" ? "Paid" : "Due",
+                    ]}
                   />
                 }
               />
@@ -176,7 +184,9 @@ export function BillsChart() {
         ) : (
           <div className="flex min-h-56 flex-1 flex-col items-center justify-center gap-1 text-center">
             <p className="text-sm font-medium text-foreground">No bills in this range</p>
-            <p className="text-xs text-muted-foreground">Pick a different period to see activity.</p>
+            <p className="text-xs text-muted-foreground">
+              Pick a different period to see activity.
+            </p>
           </div>
         )}
       </div>

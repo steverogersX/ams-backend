@@ -43,5 +43,7 @@ export function DataTableColumnHeader({
     );
   }
 
-  return <span className="flex items-center gap-1.5 font-medium text-muted-foreground">{content}</span>;
+  return (
+    <span className="flex items-center gap-1.5 font-medium text-muted-foreground">{content}</span>
+  );
 }
