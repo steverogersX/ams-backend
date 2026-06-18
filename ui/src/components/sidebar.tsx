@@ -173,7 +173,7 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        "hidden shrink-0 overflow-hidden rounded-xl border border-border bg-sidebar shadow-sm transition-[width] duration-200 ease-in-out md:flex",
+        "hidden shrink-0 overflow-hidden rounded-xl border border-border bg-sidebar shadow-sm transition-[width] duration-200 ease-in-out md:flex md:flex-col",
         collapsed ? "w-[68px]" : "w-60",
       )}
     >
