@@ -3,6 +3,9 @@ import { PermissionDefinition } from './permission.definition';
 /**
  * The single source of truth for every valid permission. Permissions are deny-by-default and
  * live only in code (never the database) — adding or changing one requires editing this file.
+ *
+ * Shared between backend and frontend: the backend enforces these via `requirePermission()`,
+ * the frontend gates UI (nav items, buttons) against the same identifiers — one registry, no drift.
  */
 
 const def = (name: string, domain: string, description: string): PermissionDefinition =>
@@ -55,4 +58,16 @@ const PERMISSION_NAMES = new Set(ALL_PERMISSIONS.map((p) => p.name));
 
 export function isValidPermission(name: string): boolean {
   return PERMISSION_NAMES.has(name);
+}
+
+const PERMISSION_KEY_BY_NAME: ReadonlyMap<string, PermissionKey> = new Map(
+  (Object.entries(Permission) as [PermissionKey, PermissionDefinition][]).map(([key, p]) => [
+    p.name,
+    key,
+  ]),
+);
+
+/** Maps a persisted dot-notation permission name (e.g. 'billing.generate') back to its typed key. */
+export function permissionKeyFromName(name: string): PermissionKey | undefined {
+  return PERMISSION_KEY_BY_NAME.get(name);
 }

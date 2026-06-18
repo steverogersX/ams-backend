@@ -1,5 +1,4 @@
-import { PermissionDefinition } from './permission.definition';
-import { ALL_PERMISSIONS, Permission } from './permission.registry';
+import { PermissionDefinition, ALL_PERMISSIONS, Permission } from '@shared/index';
 
 /**
  * Default roles seeded per society as starting points; an admin can later modify or add roles.

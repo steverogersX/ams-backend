@@ -27,11 +27,7 @@ export function ModeToggle() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" />}>
-        {mounted && theme === "dark" ? (
-          <Moon className="size-4" />
-        ) : (
-          <Sun className="size-4" />
-        )}
+        {mounted && theme === "dark" ? <Moon className="size-4" /> : <Sun className="size-4" />}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-36">
         {OPTIONS.map((opt) => (

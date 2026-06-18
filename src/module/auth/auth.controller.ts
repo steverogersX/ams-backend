@@ -35,6 +35,6 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
 
 export const me = asyncHandler(async (req: Request, res: Response) => {
   if (!req.context) throw ApiError.internal('Request context missing');
-  const user = await authService.getMe(req.context.userId);
+  const user = await authService.getMe(req.context);
   sendSuccess(res, user);
 });

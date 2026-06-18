@@ -3,7 +3,7 @@ import { validate } from '@/middlewares/validate';
 import { authenticate } from '@/middlewares/authenticate';
 import { requireSuperAdmin } from '@/middlewares/requireSuperAdmin';
 import { requirePermission } from '@/middlewares/requirePermission';
-import { Permission } from '@/module/rbac/permission.registry';
+import { Permission } from '@shared/index';
 import {
   createSocietySchema,
   societyParamSchema,
