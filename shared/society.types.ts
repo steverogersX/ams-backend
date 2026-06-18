@@ -1,3 +1,6 @@
+/** Wire-contract types for the society/platform API — shared so the platform UI's client and the
+ * backend's responses can never drift out of shape. */
+
 export interface SocietyResponse {
   id: string;
   name: string;

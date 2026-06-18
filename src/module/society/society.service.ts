@@ -4,7 +4,7 @@ import { db } from '@/db/client';
 import { societies, roles, rolePermissions, users, userRoles } from '@/db/schema';
 import { ApiError } from '@/utils/ApiError';
 import { DEFAULT_ROLE_TEMPLATES } from '@/module/rbac/role-template';
-import type { SocietyResponse, MemberResponse } from './society.types';
+import type { SocietyResponse, MemberResponse } from '@shared/index';
 
 class SocietyService {
   async createSociety(name: string, adminUserId: string): Promise<SocietyResponse> {
