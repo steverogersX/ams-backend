@@ -5,7 +5,18 @@ import { db } from '@/db/client';
 import { users, sessions, societies, roles, rolePermissions, userRoles } from '@/db/schema';
 import { config } from '@/config';
 import { ApiError } from '@/utils/ApiError';
-import type { LoginResponse, MeResponse, RegisterResponse, SocietyMembership } from './auth.types';
+import { permissionKeyFromName, type PermissionKey } from '@shared/index';
+import type { LoginResponse, MeResponse, RegisterResponse, SocietyMembership } from '@shared/index';
+import type { RequestContext } from './auth.types';
+
+function toPermissionKeys(names: Iterable<string>): PermissionKey[] {
+  const keys: PermissionKey[] = [];
+  for (const name of names) {
+    const key = permissionKeyFromName(name);
+    if (key) keys.push(key);
+  }
+  return keys;
+}
 
 const scryptAsync = promisify(scrypt);
 
@@ -104,9 +115,18 @@ class AuthService {
           societyName: row.societyName,
           societyToken: row.societyToken,
           roles: [row.roleName],
+          permissions: [],
         });
       }
     }
+
+    const societyMemberships = await Promise.all(
+      [...societyMap.values()].map(async (membership) => {
+        const effective = await this.getEffectivePermissions(user.id, membership.societyId);
+        membership.permissions = toPermissionKeys(effective);
+        return membership;
+      }),
+    );
 
     return {
       token: rawToken,
@@ -116,7 +136,7 @@ class AuthService {
         displayName: user.displayName,
         isSuperAdmin: user.isSuperAdmin,
       },
-      societies: [...societyMap.values()],
+      societies: societyMemberships,
     };
   }
 
@@ -180,7 +200,7 @@ class AuthService {
     return new Set(rows.map((r) => r.permission));
   }
 
-  async getMe(userId: string): Promise<MeResponse> {
+  async getMe(ctx: RequestContext): Promise<MeResponse> {
     const [user] = await db
       .select({
         id: users.id,
@@ -193,11 +213,29 @@ class AuthService {
         updatedAt: users.updatedAt,
       })
       .from(users)
-      .where(eq(users.id, userId))
+      .where(eq(users.id, ctx.userId))
       .limit(1);
 
     if (!user) throw ApiError.notFound('User not found');
-    return user;
+
+    const roleNames = ctx.societyId ? await this.getRoleNames(ctx.userId, ctx.societyId) : [];
+
+    return {
+      ...user,
+      societyId: ctx.societyId,
+      roles: roleNames,
+      permissions: toPermissionKeys(ctx.permissions),
+    };
+  }
+
+  private async getRoleNames(userId: string, societyId: string): Promise<string[]> {
+    const rows = await db
+      .select({ roleName: roles.name })
+      .from(userRoles)
+      .innerJoin(roles, eq(roles.id, userRoles.roleId))
+      .where(and(eq(userRoles.userId, userId), eq(roles.societyId, societyId)));
+
+    return rows.map((r) => r.roleName);
   }
 }
 

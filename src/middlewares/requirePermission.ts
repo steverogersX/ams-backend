@@ -1,6 +1,6 @@
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
 import { ApiError } from '@/utils/ApiError';
-import type { PermissionDefinition } from '@/module/rbac/permission.definition';
+import type { PermissionDefinition } from '@shared/index';
 
 export function requirePermission(...permissions: PermissionDefinition[]): RequestHandler {
   return (_req: Request, _res: Response, next: NextFunction): void => {
