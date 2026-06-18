@@ -22,7 +22,7 @@ import {
   Bird,
 } from "lucide-react";
 
-import type { PermissionKey } from "@shared/index";
+import { Permission, permissionKeyFromName, type PermissionDefinition } from "@shared/index";
 
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -32,8 +32,8 @@ type NavItem = {
   href?: string;
   icon: React.ComponentType<{ className?: string }>;
   soon?: boolean;
-  /** Omit for items everyone with access to this dashboard should see; set to gate on a frozen registry key. */
-  permission?: PermissionKey;
+  /** Omit for items everyone with access to this dashboard should see; set to gate via the typed `Permission.*` accessor. */
+  permission?: PermissionDefinition;
 };
 
 export type { NavItem };
@@ -47,7 +47,7 @@ const defaultNavItems: NavItem[] = [
   { label: "Visitors", href: "/dashboard/visitors", icon: UserCheck },
   { label: "Amenities", href: "/dashboard/amenities", icon: Sofa },
   { label: "Notices", href: "/dashboard/notices", icon: Megaphone },
-  { label: "Users", href: "/dashboard/users", icon: Users },
+  { label: "Users", href: "/dashboard/users", icon: Users, permission: Permission.RolesView },
 ];
 
 const defaultSoonItems: NavItem[] = [
@@ -124,8 +124,13 @@ export function SidebarContent({
   brand?: React.ReactNode;
 }) {
   const { has } = useAuth();
-  const visibleNavItems = navItems.filter((item) => !item.permission || has(item.permission));
-  const visibleSoonItems = soonItems.filter((item) => !item.permission || has(item.permission));
+  const isVisible = (item: NavItem) => {
+    if (!item.permission) return true;
+    const key = permissionKeyFromName(item.permission.name);
+    return key ? has(key) : false;
+  };
+  const visibleNavItems = navItems.filter(isVisible);
+  const visibleSoonItems = soonItems.filter(isVisible);
 
   return (
     <div className="flex h-full flex-col">
