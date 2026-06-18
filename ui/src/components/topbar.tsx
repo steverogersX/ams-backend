@@ -17,6 +17,7 @@ import {
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { SidebarContent } from "@/components/sidebar";
 import { SocietyLogo } from "@/components/society-logo";
+import { ModeToggle } from "@/components/mode-toggle";
 import { memberSocieties, society } from "@/lib/mock-data";
 
 export function Topbar() {
@@ -75,6 +76,8 @@ export function Topbar() {
       </div>
 
       <div className="flex items-center gap-1.5">
+        <ModeToggle />
+
         <Button variant="ghost" size="icon-sm" className="relative">
           <Bell className="size-4" />
           <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-red-500" />
