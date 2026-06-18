@@ -5,6 +5,7 @@ import { format, formatDistanceToNow, isToday } from "date-fns";
 import { AlertTriangle, Check, Sparkles, Ticket, X } from "lucide-react";
 
 import { cn, getInitials, gradientForName } from "@/lib/utils";
+import { useNow } from "@/hooks/use-now";
 import { Button } from "@/components/ui/button";
 import { type Complaint, type ComplaintStatus, complaints, visitors_log } from "@/lib/mock-data";
 
@@ -144,11 +145,7 @@ function EmptyState() {
 }
 
 export function ActivityFeed() {
-  const [now, setNow] = React.useState<number | null>(null);
-
-  React.useEffect(() => {
-    setNow(Date.now());
-  }, []);
+  const now = useNow();
 
   const activity = React.useMemo(() => (now ? buildActivity(now) : []), [now]);
   const today = activity.filter((a) => isToday(new Date(a.timestamp)));

@@ -1,7 +1,8 @@
 "use client";
 
-import * as React from "react";
 import { Sun, Sunrise, Sunset, Moon } from "lucide-react";
+
+import { useNow } from "@/hooks/use-now";
 
 function resolveGreeting(hour: number) {
   if (hour < 5) return { text: "Good night", icon: Moon };
@@ -18,12 +19,8 @@ export function Greeting({
   name: string;
   subtitle: string;
 }) {
-  const [greeting, setGreeting] = React.useState(() => resolveGreeting(new Date().getHours()));
-
-  React.useEffect(() => {
-    setGreeting(resolveGreeting(new Date().getHours()));
-  }, []);
-
+  const now = useNow();
+  const greeting = resolveGreeting(new Date(now ?? 0).getHours());
   const Icon = greeting.icon;
 
   return (
