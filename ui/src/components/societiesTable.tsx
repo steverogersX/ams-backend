@@ -32,7 +32,7 @@ export function SocietiesTable({ societies }: { societies: SocietyResponse[] }) 
         return (
           <Link
             key={s.id}
-            href={`/platform/${s.id}`}
+            href={`/platform/societies/${s.id}`}
             className="group flex flex-col gap-4 rounded-md border border-border bg-card p-4 transition-colors hover:border-foreground/20 hover:bg-muted/30"
           >
             <div className="flex items-start justify-between gap-3">

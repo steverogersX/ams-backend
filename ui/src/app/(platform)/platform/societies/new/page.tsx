@@ -28,7 +28,7 @@ export default function CreateSocietyPage() {
         variant="ghost"
         size="sm"
         className="-ml-2 w-fit gap-1.5 text-muted-foreground"
-        onClick={() => router.push("/platform")}
+        onClick={() => router.push("/platform/societies")}
       >
         <ArrowLeft className="size-3.5" />
         Societies
@@ -150,10 +150,10 @@ export default function CreateSocietyPage() {
       <Separator />
 
       <div className="flex items-center justify-end gap-2">
-        <Button variant="outline" onClick={() => router.push("/platform")}>
+        <Button variant="outline" onClick={() => router.push("/platform/societies")}>
           Cancel
         </Button>
-        <Button onClick={() => router.push("/platform")}>Create society</Button>
+        <Button onClick={() => router.push("/platform/societies")}>Create society</Button>
       </div>
     </div>
   );

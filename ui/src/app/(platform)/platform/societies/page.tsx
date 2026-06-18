@@ -33,7 +33,7 @@ export default function PlatformSocietiesPage() {
             Every society on the platform. Create one to onboard a new customer.
           </p>
         </div>
-        <Button size="sm" render={<Link href="/platform/new" />}>
+        <Button size="sm" render={<Link href="/platform/societies/new" />}>
           Create society
         </Button>
       </div>

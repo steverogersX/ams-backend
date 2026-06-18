@@ -3,7 +3,9 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 
+import { Sidebar } from "@/components/sidebar";
 import { PlatformTopbar } from "@/components/platformTopbar";
+import { platformNavItems, platformSoonItems } from "@/lib/platformNav";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function PlatformLayout({ children }: { children: React.ReactNode }) {
@@ -18,9 +20,12 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
   if (status !== "authenticated" || !user?.isSuperAdmin) return null;
 
   return (
-    <div className="flex h-screen w-full flex-col overflow-hidden bg-background">
-      <PlatformTopbar />
-      <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
+    <div className="flex h-screen w-full gap-2 overflow-hidden bg-muted/40 p-2">
+      <Sidebar navItems={platformNavItems} soonItems={platformSoonItems} brand="Rooster" />
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm">
+        <PlatformTopbar />
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
+      </div>
     </div>
   );
 }

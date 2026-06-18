@@ -63,7 +63,7 @@ export default function SocietyDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center gap-3 py-20 text-center">
         <p className="text-sm text-muted-foreground">Society not found.</p>
-        <Button variant="outline" size="sm" onClick={() => router.push("/platform")}>
+        <Button variant="outline" size="sm" onClick={() => router.push("/platform/societies")}>
           Back to societies
         </Button>
       </div>
@@ -78,7 +78,7 @@ export default function SocietyDetailPage() {
         variant="ghost"
         size="sm"
         className="-ml-2 w-fit gap-1.5 text-muted-foreground"
-        onClick={() => router.push("/platform")}
+        onClick={() => router.push("/platform/societies")}
       >
         <ArrowLeft className="size-3.5" />
         Societies
