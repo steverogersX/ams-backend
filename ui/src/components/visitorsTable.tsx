@@ -28,8 +28,8 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DataTableColumnHeader } from "@/components/data-table-column-header";
-import { DataTablePagination } from "@/components/data-table-pagination";
+import { DataTableColumnHeader } from "@/components/dataTableColumnHeader";
+import { DataTablePagination } from "@/components/dataTablePagination";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,8 +53,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { VisitorPass } from "@/components/visitor-pass";
-import { Visitor, VisitorStatus, visitors_log } from "@/lib/mock-data";
+import { VisitorPass } from "@/components/visitorPass";
+import { Visitor, VisitorStatus, visitors_log } from "@/lib/mockData";
 
 const STATUS_META: Record<
   VisitorStatus,

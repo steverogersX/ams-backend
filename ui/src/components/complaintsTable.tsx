@@ -15,8 +15,8 @@ import { ArrowDown, ArrowRight, ArrowUp, ListFilter } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { DataTableColumnHeader } from "@/components/data-table-column-header";
-import { DataTablePagination } from "@/components/data-table-pagination";
+import { DataTableColumnHeader } from "@/components/dataTableColumnHeader";
+import { DataTablePagination } from "@/components/dataTablePagination";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,7 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Complaint, ComplaintPriority, ComplaintStatus, complaints } from "@/lib/mock-data";
+import { Complaint, ComplaintPriority, ComplaintStatus, complaints } from "@/lib/mockData";
 
 const STATUS_DOT: Record<ComplaintStatus, string> = {
   open: "bg-blue-500",

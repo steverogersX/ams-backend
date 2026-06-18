@@ -5,9 +5,9 @@ import { format, formatDistanceToNow, isToday } from "date-fns";
 import { AlertTriangle, Check, Sparkles, Ticket, X } from "lucide-react";
 
 import { cn, getInitials, gradientForName } from "@/lib/utils";
-import { useNow } from "@/hooks/use-now";
+import { useNow } from "@/hooks/useNow";
 import { Button } from "@/components/ui/button";
-import { type Complaint, type ComplaintStatus, complaints, visitors_log } from "@/lib/mock-data";
+import { type Complaint, type ComplaintStatus, complaints, visitors_log } from "@/lib/mockData";
 
 const COMPLAINT_STATUS_META: Record<
   ComplaintStatus,

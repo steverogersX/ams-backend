@@ -2,7 +2,7 @@
 
 import { Sun, Sunrise, Sunset, Moon } from "lucide-react";
 
-import { useNow } from "@/hooks/use-now";
+import { useNow } from "@/hooks/useNow";
 
 function resolveGreeting(hour: number) {
   if (hour < 5) return { text: "Good night", icon: Moon };

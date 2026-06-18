@@ -1,10 +1,10 @@
 import { Greeting } from "@/components/greeting";
-import { ActivityFeed } from "@/components/activity-feed";
-import { BillsChart } from "@/components/bills-chart";
-import { ComplaintStatusChart } from "@/components/complaint-status-chart";
-import { ComplaintsTable } from "@/components/complaints-table";
-import { NoticesFeed } from "@/components/notices-feed";
-import { currentFlat } from "@/lib/mock-data";
+import { ActivityFeed } from "@/components/activityFeed";
+import { BillsChart } from "@/components/billsChart";
+import { ComplaintStatusChart } from "@/components/complaintStatusChart";
+import { ComplaintsTable } from "@/components/complaintsTable";
+import { NoticesFeed } from "@/components/noticesFeed";
+import { currentFlat } from "@/lib/mockData";
 
 export default function DashboardPage() {
   const firstName = currentFlat.ownerName.split(" ")[0];

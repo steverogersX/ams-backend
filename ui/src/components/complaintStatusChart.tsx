@@ -9,7 +9,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { complaintStatusBreakdown, type ComplaintStatus } from "@/lib/mock-data";
+import { complaintStatusBreakdown, type ComplaintStatus } from "@/lib/mockData";
 
 const STATUS_COLOR: Record<ComplaintStatus, string> = {
   open: "#3b82f6",

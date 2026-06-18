@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { currentFlat } from "@/lib/mock-data";
+import { currentFlat } from "@/lib/mockData";
 
 const fields: { label: string; value: string }[] = [
   { label: "Flat number", value: currentFlat.flatNumber },

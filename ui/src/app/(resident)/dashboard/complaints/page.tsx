@@ -1,4 +1,4 @@
-import { ComplaintsTable } from "@/components/complaints-table";
+import { ComplaintsTable } from "@/components/complaintsTable";
 
 export default function ComplaintsPage() {
   return (
