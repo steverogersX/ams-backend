@@ -8,14 +8,15 @@ import { Topbar } from "@/components/topbar";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function ResidentLayout({ children }: { children: React.ReactNode }) {
-  const { status } = useAuth();
+  const { status, user } = useAuth();
   const router = useRouter();
 
   React.useEffect(() => {
     if (status === "unauthenticated") router.replace("/login");
-  }, [status, router]);
+    else if (status === "authenticated" && user?.isSuperAdmin) router.replace("/platform");
+  }, [status, user, router]);
 
-  if (status !== "authenticated") return null;
+  if (status !== "authenticated" || user?.isSuperAdmin) return null;
 
   return (
     <div className="flex h-screen w-full gap-2 overflow-hidden bg-muted/40 p-2">

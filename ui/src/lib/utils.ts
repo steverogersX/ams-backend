@@ -18,7 +18,7 @@ const AVATAR_PALETTE: [string, string][] = [
   ["#22c55e", "#a3e635"],
 ];
 
-function hashString(input: string) {
+export function hashString(input: string) {
   let hash = 0;
   for (let i = 0; i < input.length; i++) {
     hash = (hash * 31 + input.charCodeAt(i)) >>> 0;

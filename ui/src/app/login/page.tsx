@@ -42,8 +42,8 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
     try {
-      await login(email, password);
-      router.push("/dashboard");
+      const user = await login(email, password);
+      router.push(user.isSuperAdmin ? "/platform" : "/dashboard");
     } catch (err) {
       setError(err instanceof ApiClientError ? err.message : "Couldn't reach the server");
       setLoading(false);

@@ -22,7 +22,7 @@ export interface AuthContextValue extends AuthState {
   roles: string[];
   permissions: ReadonlySet<PermissionKey>;
   has: (permission: PermissionKey) => boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<AuthUser>;
   logout: () => Promise<void>;
   switchSociety: (societyId: string) => void;
   refreshMe: () => Promise<void>;

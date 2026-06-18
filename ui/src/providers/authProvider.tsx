@@ -70,6 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       societies: result.societies,
       activeSocietyId,
     });
+    return result.user;
   }, []);
 
   const logout = React.useCallback(async () => {

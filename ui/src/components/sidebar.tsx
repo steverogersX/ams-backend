@@ -30,7 +30,9 @@ type NavItem = {
   soon?: boolean;
 };
 
-const navItems: NavItem[] = [
+export type { NavItem };
+
+const defaultNavItems: NavItem[] = [
   { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
   { label: "My Flat", href: "/dashboard/flat", icon: House },
   { label: "Bills & Payments", href: "/dashboard/billing", icon: Receipt },
@@ -41,7 +43,7 @@ const navItems: NavItem[] = [
   { label: "Notices", href: "/dashboard/notices", icon: Megaphone },
 ];
 
-const soonItems: NavItem[] = [
+const defaultSoonItems: NavItem[] = [
   { label: "Domestic Staff", icon: HandHelping, soon: true },
   { label: "Forum", icon: MessagesSquare, soon: true },
   { label: "Chat", icon: MessageCircle, soon: true },
@@ -100,9 +102,19 @@ function SectionLabel({ children, collapsed }: { children: React.ReactNode; coll
 export function SidebarContent({
   collapsed = false,
   onToggle,
+  navItems = defaultNavItems,
+  soonItems = defaultSoonItems,
+  menuLabel = "Menu",
+  moreLabel = "More",
+  brand = "Rooster",
 }: {
   collapsed?: boolean;
   onToggle?: () => void;
+  navItems?: NavItem[];
+  soonItems?: NavItem[];
+  menuLabel?: string;
+  moreLabel?: string;
+  brand?: React.ReactNode;
 }) {
   return (
     <div className="flex h-full flex-col">
@@ -116,7 +128,7 @@ export function SidebarContent({
           <Bird className="size-4" />
         </div>
         {!collapsed && (
-          <span className="text-[15px] font-semibold tracking-tight text-foreground">Rooster</span>
+          <span className="text-[15px] font-semibold tracking-tight text-foreground">{brand}</span>
         )}
       </div>
 
@@ -126,17 +138,21 @@ export function SidebarContent({
           collapsed ? "items-center px-2" : "px-3",
         )}
       >
-        <SectionLabel collapsed={collapsed}>Menu</SectionLabel>
+        <SectionLabel collapsed={collapsed}>{menuLabel}</SectionLabel>
         {navItems.map((item) => (
           <NavLink key={item.label} item={item} collapsed={collapsed} />
         ))}
 
-        <div className="pt-3">
-          <SectionLabel collapsed={collapsed}>More</SectionLabel>
-        </div>
-        {soonItems.map((item) => (
-          <NavLink key={item.label} item={item} collapsed={collapsed} />
-        ))}
+        {soonItems.length > 0 && (
+          <>
+            <div className="pt-3">
+              <SectionLabel collapsed={collapsed}>{moreLabel}</SectionLabel>
+            </div>
+            {soonItems.map((item) => (
+              <NavLink key={item.label} item={item} collapsed={collapsed} />
+            ))}
+          </>
+        )}
       </nav>
 
       {onToggle && (
@@ -159,7 +175,19 @@ export function SidebarContent({
   );
 }
 
-export function Sidebar() {
+export function Sidebar({
+  navItems,
+  soonItems,
+  menuLabel,
+  moreLabel,
+  brand,
+}: {
+  navItems?: NavItem[];
+  soonItems?: NavItem[];
+  menuLabel?: string;
+  moreLabel?: string;
+  brand?: React.ReactNode;
+}) {
   const [collapsed, setCollapsed] = React.useState(false);
 
   return (
@@ -169,7 +197,15 @@ export function Sidebar() {
         collapsed ? "w-[68px]" : "w-60",
       )}
     >
-      <SidebarContent collapsed={collapsed} onToggle={() => setCollapsed((c) => !c)} />
+      <SidebarContent
+        collapsed={collapsed}
+        onToggle={() => setCollapsed((c) => !c)}
+        navItems={navItems}
+        soonItems={soonItems}
+        menuLabel={menuLabel}
+        moreLabel={moreLabel}
+        brand={brand}
+      />
     </aside>
   );
 }
