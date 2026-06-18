@@ -16,7 +16,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { billHistory, type BillMonth } from "@/lib/mock-data";
+import { billHistory, type BillMonth } from "@/lib/mockData";
 
 const chartConfig: ChartConfig = {
   paid: { label: "Paid", color: "#10b981" },

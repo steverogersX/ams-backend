@@ -1,5 +1,5 @@
-import { InviteVisitorDialog } from "@/components/invite-visitor-dialog";
-import { VisitorsTable } from "@/components/visitors-table";
+import { InviteVisitorDialog } from "@/components/inviteVisitorDialog";
+import { VisitorsTable } from "@/components/visitorsTable";
 
 export default function VisitorsPage() {
   return (

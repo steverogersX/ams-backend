@@ -1,7 +1,7 @@
-import { BillsChart } from "@/components/bills-chart";
+import { BillsChart } from "@/components/billsChart";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { stats, billHistory } from "@/lib/mock-data";
+import { stats, billHistory } from "@/lib/mockData";
 
 export default function BillingPage() {
   return (

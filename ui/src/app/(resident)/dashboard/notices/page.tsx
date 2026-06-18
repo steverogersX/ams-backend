@@ -1,4 +1,4 @@
-import { NoticesFeed } from "@/components/notices-feed";
+import { NoticesFeed } from "@/components/noticesFeed";
 
 export default function NoticesPage() {
   return (

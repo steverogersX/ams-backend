@@ -5,8 +5,8 @@ import { QRCodeSVG } from "qrcode.react";
 import { Check, Copy, CalendarDays, Clock, Home, Ticket, UserCheck, UserRound } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { SocietyLogo } from "@/components/society-logo";
-import { currentFlat, society, type VisitorStatus } from "@/lib/mock-data";
+import { SocietyLogo } from "@/components/societyLogo";
+import { currentFlat, society, type VisitorStatus } from "@/lib/mockData";
 
 const STATUS_DOT: Record<VisitorStatus, string> = {
   expected: "bg-blue-400",

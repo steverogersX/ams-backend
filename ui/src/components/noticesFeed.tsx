@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Droplets, CalendarDays, Sparkles, Info, ArrowRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { NoticeKind, notices } from "@/lib/mock-data";
+import { NoticeKind, notices } from "@/lib/mockData";
 
 const KIND_META: Record<
   NoticeKind,

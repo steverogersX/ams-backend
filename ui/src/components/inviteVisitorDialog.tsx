@@ -27,7 +27,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { VisitorPass, type VisitorPassData } from "@/components/visitor-pass";
+import { VisitorPass, type VisitorPassData } from "@/components/visitorPass";
 
 const TIME_SLOTS = Array.from({ length: 48 }, (_, i) => {
   const h = Math.floor(i / 2);

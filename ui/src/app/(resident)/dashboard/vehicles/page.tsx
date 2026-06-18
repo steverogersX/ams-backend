@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { vehicles } from "@/lib/mock-data";
+import { vehicles } from "@/lib/mockData";
 
 export default function VehiclesPage() {
   return (
