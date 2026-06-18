@@ -3,11 +3,13 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Bird, Eye, EyeOff, Loader2, Receipt, ShieldCheck, Users } from "lucide-react";
+import { AlertCircle, ArrowRight, Bird, Eye, EyeOff, Loader2, Receipt, ShieldCheck, Users } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAuth } from "@/hooks/useAuth";
+import { ApiClientError } from "@/lib/apiClient";
 
 const FEATURES = [
   { icon: Users, label: "Residents — visitors, bills & complaints" },
@@ -28,15 +30,24 @@ function BrandMark({ className }: { className?: string }) {
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     setLoading(true);
-    setTimeout(() => router.push("/dashboard"), 900);
+    try {
+      await login(email, password);
+      router.push("/dashboard");
+    } catch (err) {
+      setError(err instanceof ApiClientError ? err.message : "Couldn't reach the server");
+      setLoading(false);
+    }
   };
 
   return (
@@ -89,6 +100,13 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            {error && (
+              <div className="flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                <AlertCircle className="size-4 shrink-0" />
+                {error}
+              </div>
+            )}
+
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="email">Email</Label>
               <Input

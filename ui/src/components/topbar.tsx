@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { Bell, Check, ChevronDown, Menu } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -16,12 +17,22 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { SidebarContent } from "@/components/sidebar";
-import { SocietyLogo } from "@/components/society-logo";
-import { ModeToggle } from "@/components/mode-toggle";
-import { memberSocieties, society } from "@/lib/mock-data";
+import { SocietyLogo } from "@/components/societyLogo";
+import { ModeToggle } from "@/components/modeToggle";
+import { getInitials } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
 
 export function Topbar() {
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const router = useRouter();
+  const { user, societies, activeSociety, roles, switchSociety, logout } = useAuth();
+
+  const displayName = user?.displayName ?? user?.email ?? "Account";
+
+  const handleSignOut = async () => {
+    await logout();
+    router.replace("/login");
+  };
 
   return (
     <header className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-background px-4">
@@ -41,38 +52,52 @@ export function Topbar() {
           </SheetContent>
         </Sheet>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={<Button variant="ghost" size="sm" className="h-9 gap-2 pl-1.5 font-semibold" />}
-          >
-            <SocietyLogo
-              name={society.name}
-              initials={society.initials}
-              className="size-6 text-[11px]"
-            />
-            {society.name}
-            <ChevronDown className="size-3.5 text-muted-foreground" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-60">
-            <DropdownMenuGroup>
-              <DropdownMenuLabel>Your societies</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {memberSocieties.map((s) => {
-                const active = s.name === society.name;
-                return (
-                  <DropdownMenuItem key={s.name} className="gap-2.5 py-1.5">
-                    <SocietyLogo name={s.name} initials={s.initials} className="size-7 text-xs" />
-                    <span className="flex min-w-0 flex-col">
-                      <span className="truncate text-sm font-medium text-foreground">{s.name}</span>
-                      <span className="truncate text-[11px] text-muted-foreground">{s.role}</span>
-                    </span>
-                    {active && <Check className="ml-auto size-4 shrink-0 text-foreground" />}
-                  </DropdownMenuItem>
-                );
-              })}
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {activeSociety && (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={<Button variant="ghost" size="sm" className="h-9 gap-2 pl-1.5 font-semibold" />}
+            >
+              <SocietyLogo
+                name={activeSociety.societyName}
+                initials={getInitials(activeSociety.societyName)}
+                className="size-6 text-[11px]"
+              />
+              {activeSociety.societyName}
+              <ChevronDown className="size-3.5 text-muted-foreground" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-60">
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Your societies</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {societies.map((s) => {
+                  const active = s.societyId === activeSociety.societyId;
+                  return (
+                    <DropdownMenuItem
+                      key={s.societyId}
+                      className="gap-2.5 py-1.5"
+                      onClick={() => switchSociety(s.societyId)}
+                    >
+                      <SocietyLogo
+                        name={s.societyName}
+                        initials={getInitials(s.societyName)}
+                        className="size-7 text-xs"
+                      />
+                      <span className="flex min-w-0 flex-col">
+                        <span className="truncate text-sm font-medium text-foreground">
+                          {s.societyName}
+                        </span>
+                        <span className="truncate text-[11px] text-muted-foreground">
+                          {s.roles.join(", ")}
+                        </span>
+                      </span>
+                      {active && <Check className="ml-auto size-4 shrink-0 text-foreground" />}
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
 
       <div className="flex items-center gap-1.5">
@@ -86,15 +111,17 @@ export function Topbar() {
         <DropdownMenu>
           <DropdownMenuTrigger render={<button className="ml-1 rounded-full" />}>
             <Avatar className="size-7">
-              <AvatarFallback className="text-xs">PK</AvatarFallback>
+              <AvatarFallback className="text-xs">{getInitials(displayName)}</AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuGroup>
               <DropdownMenuLabel>
                 <div className="flex flex-col gap-0.5">
-                  <span className="font-medium text-foreground">Padma Konkonapala</span>
-                  <span className="text-xs text-muted-foreground">Flat 304 · Owner</span>
+                  <span className="font-medium text-foreground">{displayName}</span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    {roles.length ? roles.join(", ") : "No role in this society"}
+                  </span>
                 </div>
               </DropdownMenuLabel>
             </DropdownMenuGroup>
@@ -102,7 +129,9 @@ export function Topbar() {
             <DropdownMenuItem>Profile settings</DropdownMenuItem>
             <DropdownMenuItem>Switch account</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive">Sign out</DropdownMenuItem>
+            <DropdownMenuItem variant="destructive" onClick={handleSignOut}>
+              Sign out
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

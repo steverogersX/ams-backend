@@ -1,7 +1,22 @@
+"use client";
+
+import * as React from "react";
+import { useRouter } from "next/navigation";
+
 import { Sidebar } from "@/components/sidebar";
 import { Topbar } from "@/components/topbar";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function ResidentLayout({ children }: { children: React.ReactNode }) {
+  const { status } = useAuth();
+  const router = useRouter();
+
+  React.useEffect(() => {
+    if (status === "unauthenticated") router.replace("/login");
+  }, [status, router]);
+
+  if (status !== "authenticated") return null;
+
   return (
     <div className="flex h-screen w-full gap-2 overflow-hidden bg-muted/40 p-2">
       <Sidebar />
