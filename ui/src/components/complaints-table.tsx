@@ -10,19 +10,13 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import {
-  ArrowDown,
-  ArrowRight,
-  ArrowUp,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsUpDown,
-  ListFilter,
-} from "lucide-react";
+import { ArrowDown, ArrowRight, ArrowUp, ListFilter } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { DataTableColumnHeader } from "@/components/data-table-column-header";
+import { DataTablePagination } from "@/components/data-table-pagination";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -66,37 +60,11 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
 }
 
-function SortableHeader({
-  label,
-  sorted,
-  onClick,
-}: {
-  label: string;
-  sorted: false | "asc" | "desc";
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="-ml-1 flex items-center gap-1 rounded px-1 py-0.5 font-medium text-muted-foreground transition-colors hover:text-foreground"
-    >
-      {label}
-      {sorted === "asc" ? (
-        <ArrowUp className="size-3" />
-      ) : sorted === "desc" ? (
-        <ArrowDown className="size-3" />
-      ) : (
-        <ChevronsUpDown className="size-3 opacity-50" />
-      )}
-    </button>
-  );
-}
-
 const columns: ColumnDef<Complaint>[] = [
   {
     accessorKey: "ticketNumber",
     header: ({ column }) => (
-      <SortableHeader
+      <DataTableColumnHeader
         label="Ticket"
         sorted={column.getIsSorted()}
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
@@ -110,7 +78,7 @@ const columns: ColumnDef<Complaint>[] = [
   },
   {
     accessorKey: "title",
-    header: () => <span className="font-medium text-muted-foreground">Issue</span>,
+    header: () => <DataTableColumnHeader label="Issue" />,
     cell: ({ row }) => (
       <div className="flex min-w-0 max-w-[240px] flex-col">
         <span className="truncate font-medium text-foreground">{row.original.title}</span>
@@ -120,7 +88,7 @@ const columns: ColumnDef<Complaint>[] = [
   },
   {
     accessorKey: "status",
-    header: () => <span className="font-medium text-muted-foreground">Status</span>,
+    header: () => <DataTableColumnHeader label="Status" />,
     cell: ({ row }) => {
       const status = row.original.status;
       return (
@@ -133,7 +101,7 @@ const columns: ColumnDef<Complaint>[] = [
   },
   {
     accessorKey: "priority",
-    header: () => <span className="font-medium text-muted-foreground">Priority</span>,
+    header: () => <DataTableColumnHeader label="Priority" />,
     cell: ({ row }) => {
       const meta = PRIORITY_META[row.original.priority];
       const Icon = meta.icon;
@@ -149,7 +117,7 @@ const columns: ColumnDef<Complaint>[] = [
     id: "createdAt",
     accessorKey: "createdAt",
     header: ({ column }) => (
-      <SortableHeader
+      <DataTableColumnHeader
         label="Raised"
         sorted={column.getIsSorted()}
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
@@ -164,7 +132,7 @@ const columns: ColumnDef<Complaint>[] = [
   {
     id: "assignedTo",
     accessorKey: "assignedTo",
-    header: () => <span className="font-medium text-muted-foreground">Assigned to</span>,
+    header: () => <DataTableColumnHeader label="Assigned to" />,
     cell: ({ row }) => {
       const assignee = row.original.assignedTo;
       if (!assignee) {
@@ -191,7 +159,9 @@ const STATUS_FILTERS: { label: string; value: ComplaintStatus | "all" }[] = [
 ];
 
 export function ComplaintsTable({ compact = false }: { compact?: boolean }) {
-  const [sorting, setSorting] = React.useState<SortingState>([{ id: "createdAt", desc: true }]);
+  const [sorting, setSorting] = React.useState<SortingState>(
+    compact ? [] : [{ id: "createdAt", desc: true }],
+  );
   const [statusFilter, setStatusFilter] = React.useState<ComplaintStatus | "all">("all");
 
   const data = React.useMemo(
@@ -201,7 +171,8 @@ export function ComplaintsTable({ compact = false }: { compact?: boolean }) {
   );
 
   const visibleColumns = React.useMemo(
-    () => (compact ? columns.filter((c) => c.id !== "createdAt" && c.id !== "assignedTo") : columns),
+    () =>
+      compact ? columns.filter((c) => c.id !== "createdAt" && c.id !== "assignedTo") : columns,
     [compact],
   );
 
@@ -277,30 +248,7 @@ export function ComplaintsTable({ compact = false }: { compact?: boolean }) {
         </TableBody>
       </Table>
 
-      <div className="flex items-center justify-between border-t border-border px-4 py-3">
-        <span className="text-xs text-muted-foreground">
-          {data.length} {data.length === 1 ? "complaint" : "complaints"} · page{" "}
-          {table.getState().pagination.pageIndex + 1} of {table.getPageCount() || 1}
-        </span>
-        <div className="flex items-center gap-1.5">
-          <Button
-            variant="outline"
-            size="icon-sm"
-            disabled={!table.getCanPreviousPage()}
-            onClick={() => table.previousPage()}
-          >
-            <ChevronLeft className="size-3.5" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon-sm"
-            disabled={!table.getCanNextPage()}
-            onClick={() => table.nextPage()}
-          >
-            <ChevronRight className="size-3.5" />
-          </Button>
-        </div>
-      </div>
+      <DataTablePagination table={table} itemLabel="complaint" />
     </div>
   );
 }

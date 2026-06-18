@@ -8,9 +8,7 @@ export default function BillingPage() {
     <div className="mx-auto flex max-w-4xl flex-col gap-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold tracking-tight text-foreground">
-            Bills & Payments
-          </h1>
+          <h1 className="text-lg font-semibold tracking-tight text-foreground">Bills & Payments</h1>
           <p className="text-sm text-muted-foreground">Flat 304 maintenance ledger.</p>
         </div>
         {stats.outstandingDues > 0 && (

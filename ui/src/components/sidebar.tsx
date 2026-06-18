@@ -65,12 +65,7 @@ function NavLink({ item, collapsed }: { item: NavItem; collapsed: boolean }) {
             : "font-medium text-muted-foreground hover:bg-muted/60 hover:text-foreground",
       )}
     >
-      <Icon
-        className={cn(
-          "size-[18px] shrink-0",
-          !item.soon && active ? "text-foreground" : "",
-        )}
-      />
+      <Icon className={cn("size-[18px] shrink-0", !item.soon && active ? "text-foreground" : "")} />
       {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
       {!collapsed && item.soon && (
         <span className="rounded border border-border px-1.5 py-0.5 text-[10px] font-medium tracking-wide text-muted-foreground/70">
@@ -102,7 +97,6 @@ function SectionLabel({ children, collapsed }: { children: React.ReactNode; coll
   );
 }
 
-
 export function SidebarContent({
   collapsed = false,
   onToggle,
@@ -122,9 +116,7 @@ export function SidebarContent({
           <Bird className="size-4" />
         </div>
         {!collapsed && (
-          <span className="text-[15px] font-semibold tracking-tight text-foreground">
-            Rooster
-          </span>
+          <span className="text-[15px] font-semibold tracking-tight text-foreground">Rooster</span>
         )}
       </div>
 
@@ -173,7 +165,7 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        "hidden shrink-0 overflow-hidden rounded-xl border border-border bg-sidebar shadow-sm transition-[width] duration-200 ease-in-out md:flex",
+        "hidden shrink-0 overflow-hidden rounded-xl border border-border bg-sidebar shadow-sm transition-[width] duration-200 ease-in-out md:flex md:flex-col",
         collapsed ? "w-[68px]" : "w-60",
       )}
     >

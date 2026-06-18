@@ -55,45 +55,50 @@ export function ComplaintStatusChart() {
       <div className="flex flex-1 flex-col gap-4 px-4 py-4">
         <div className="flex flex-1 items-center justify-center">
           <ChartContainer config={chartConfig} className="aspect-square h-44 w-44 shrink-0">
-          <PieChart>
-            <ChartTooltip content={<ChartTooltipContent hideLabel nameKey="status" />} />
-            <Pie
-              data={complaintStatusBreakdown}
-              dataKey="count"
-              nameKey="status"
-              innerRadius={52}
-              outerRadius={72}
-              paddingAngle={2}
-              strokeWidth={0}
-            >
-              {complaintStatusBreakdown.map((entry) => (
-                <Cell key={entry.status} fill={STATUS_COLOR[entry.status]} />
-              ))}
-              <Label
-                content={({ viewBox }) => {
-                  if (!viewBox || !("cx" in viewBox)) return null;
-                  return (
-                    <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle">
-                      <tspan
+            <PieChart>
+              <ChartTooltip content={<ChartTooltipContent hideLabel nameKey="status" />} />
+              <Pie
+                data={complaintStatusBreakdown}
+                dataKey="count"
+                nameKey="status"
+                innerRadius={52}
+                outerRadius={72}
+                paddingAngle={2}
+                strokeWidth={0}
+              >
+                {complaintStatusBreakdown.map((entry) => (
+                  <Cell key={entry.status} fill={STATUS_COLOR[entry.status]} />
+                ))}
+                <Label
+                  content={({ viewBox }) => {
+                    if (!viewBox || !("cx" in viewBox)) return null;
+                    return (
+                      <text
                         x={viewBox.cx}
                         y={viewBox.cy}
-                        className="fill-foreground text-2xl font-semibold"
+                        textAnchor="middle"
+                        dominantBaseline="middle"
                       >
-                        {total}
-                      </tspan>
-                      <tspan
-                        x={viewBox.cx}
-                        y={(viewBox.cy ?? 0) + 18}
-                        className="fill-muted-foreground text-[11px]"
-                      >
-                        Tickets
-                      </tspan>
-                    </text>
-                  );
-                }}
-              />
-            </Pie>
-          </PieChart>
+                        <tspan
+                          x={viewBox.cx}
+                          y={viewBox.cy}
+                          className="fill-foreground text-2xl font-semibold"
+                        >
+                          {total}
+                        </tspan>
+                        <tspan
+                          x={viewBox.cx}
+                          y={(viewBox.cy ?? 0) + 18}
+                          className="fill-muted-foreground text-[11px]"
+                        >
+                          Tickets
+                        </tspan>
+                      </text>
+                    );
+                  }}
+                />
+              </Pie>
+            </PieChart>
           </ChartContainer>
         </div>
 

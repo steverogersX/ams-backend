@@ -1,7 +1,8 @@
 "use client";
 
-import * as React from "react";
 import { Sun, Sunrise, Sunset, Moon } from "lucide-react";
+
+import { useNow } from "@/hooks/use-now";
 
 function resolveGreeting(hour: number) {
   if (hour < 5) return { text: "Good night", icon: Moon };
@@ -11,26 +12,19 @@ function resolveGreeting(hour: number) {
   return { text: "Good night", icon: Moon };
 }
 
-export function Greeting({
-  name,
-  subtitle,
-}: {
-  name: string;
-  subtitle: string;
-}) {
-  const [greeting, setGreeting] = React.useState(() => resolveGreeting(new Date().getHours()));
-
-  React.useEffect(() => {
-    setGreeting(resolveGreeting(new Date().getHours()));
-  }, []);
-
+export function Greeting({ name, subtitle }: { name: string; subtitle: string }) {
+  const now = useNow();
+  const greeting = resolveGreeting(new Date(now ?? 0).getHours());
   const Icon = greeting.icon;
 
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center gap-2">
         <Icon className="size-[18px] text-muted-foreground" />
-        <h1 className="text-xl font-semibold tracking-tight text-foreground" suppressHydrationWarning>
+        <h1
+          className="text-xl font-semibold tracking-tight text-foreground"
+          suppressHydrationWarning
+        >
           {greeting.text}, {name}
         </h1>
       </div>

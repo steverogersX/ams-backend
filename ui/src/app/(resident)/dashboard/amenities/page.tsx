@@ -20,7 +20,10 @@ export default function AmenitiesPage() {
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {amenities.map((a) => (
-          <Card key={a.name} className="rounded-md flex-row items-center justify-between px-4 py-3.5">
+          <Card
+            key={a.name}
+            className="rounded-md flex-row items-center justify-between px-4 py-3.5"
+          >
             <div className="flex items-center gap-3">
               <span className="flex size-8 items-center justify-center rounded-md bg-muted text-muted-foreground">
                 <a.icon className="size-4" />

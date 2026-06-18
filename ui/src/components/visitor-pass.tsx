@@ -1,7 +1,8 @@
 "use client";
 
+import * as React from "react";
 import { QRCodeSVG } from "qrcode.react";
-import { CalendarDays, Clock, Home, ShieldCheck, Ticket, UserCheck, UserRound } from "lucide-react";
+import { Check, Copy, CalendarDays, Clock, Home, Ticket, UserCheck, UserRound } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { SocietyLogo } from "@/components/society-logo";
@@ -25,7 +26,6 @@ const STATUS_LABEL: Record<VisitorStatus, string> = {
 
 function formatDate(date: string) {
   return new Date(date).toLocaleDateString("en-IN", {
-    weekday: "short",
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -51,17 +51,14 @@ function Detail({
   mono?: boolean;
 }) {
   return (
-    <div className="flex items-start gap-2.5">
-      <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
-        <Icon className="size-3.5" />
-      </span>
+    <div className="flex items-start gap-2">
+      <Icon className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
       <div className="flex min-w-0 flex-col">
-        <span className="text-[11px] text-muted-foreground">{label}</span>
+        <span className="text-[10px] uppercase tracking-wide text-muted-foreground/80">
+          {label}
+        </span>
         <span
-          className={cn(
-            "truncate text-sm font-medium text-foreground",
-            mono && "font-mono text-[13px]",
-          )}
+          className={cn("truncate text-[13px] font-medium text-foreground", mono && "font-mono")}
         >
           {value}
         </span>
@@ -78,51 +75,93 @@ export type VisitorPassData = {
   status: VisitorStatus;
 };
 
-export function VisitorPass({ name, date, time, code, status }: VisitorPassData) {
+export function VisitorPass({
+  name,
+  date,
+  time,
+  code,
+  status,
+  copyable = false,
+}: VisitorPassData & { copyable?: boolean }) {
   const qrValue = `ROOSTER-PASS|${code}|${name}|${date} ${time}|${society.name}`;
   const host = currentFlat.ownerName.split(" ")[0];
+  const [copied, setCopied] = React.useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard?.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card">
-      <div className="flex items-center gap-3 bg-foreground px-5 py-4 text-background">
-        <SocietyLogo name={society.name} initials={society.initials} className="size-9 text-sm" />
-        <div className="min-w-0">
-          <div className="truncate text-sm font-semibold">{society.name}</div>
-          <div className="truncate text-xs text-background/60">{society.location}</div>
+    <div className="flex overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+      {/* Main stub */}
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex items-center gap-2.5 border-b border-border px-5 py-3.5">
+          <SocietyLogo name={society.name} initials={society.initials} className="size-7 text-xs" />
+          <div className="min-w-0">
+            <div className="truncate text-[13px] font-semibold leading-tight text-foreground">
+              {society.name}
+            </div>
+            <div className="truncate text-[11px] leading-tight text-muted-foreground">
+              {society.location}
+            </div>
+          </div>
+          <span className="ml-auto flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-muted/50 px-2.5 py-1 text-[11px] font-medium text-foreground">
+            <span className={cn("size-1.5 rounded-full", STATUS_DOT[status])} />
+            {STATUS_LABEL[status]}
+          </span>
         </div>
-        <span className="ml-auto flex shrink-0 items-center gap-1.5 rounded-full bg-background/15 px-2.5 py-1 text-[11px] font-medium">
-          <span className={cn("size-1.5 rounded-full", STATUS_DOT[status])} />
-          {STATUS_LABEL[status]}
+
+        <div className="flex flex-1 flex-col justify-center gap-4 px-5 py-4">
+          <div className="flex items-baseline gap-2">
+            <UserRound className="size-4 text-muted-foreground" />
+            <span className="truncate text-base font-semibold text-foreground">{name}</span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+            <Detail
+              icon={Home}
+              label="Visiting"
+              value={`Flat ${currentFlat.flatNumber} · ${currentFlat.apartmentName}`}
+            />
+            <Detail icon={UserCheck} label="Host" value={host} />
+            <Detail icon={CalendarDays} label="Date" value={formatDate(date)} />
+            <Detail icon={Clock} label="Time" value={formatTime(time)} />
+          </div>
+        </div>
+      </div>
+
+      {/* Perforation */}
+      <div className="relative w-0">
+        <div className="absolute inset-y-3 left-0 border-l border-dashed border-border" />
+        <span className="absolute left-0 top-0 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-background" />
+        <span className="absolute bottom-0 left-0 size-3.5 -translate-x-1/2 translate-y-1/2 rounded-full bg-background" />
+      </div>
+
+      {/* Tear-off stub */}
+      <div className="flex w-[148px] shrink-0 flex-col items-center justify-center gap-2.5 bg-foreground px-4 py-5 text-background">
+        <div className="rounded-lg bg-white p-2">
+          <QRCodeSVG value={qrValue} size={92} level="M" />
+        </div>
+        {copyable ? (
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="flex items-center gap-1.5 rounded-full bg-background/15 px-2 py-1 font-mono text-[11px] font-medium tracking-tight transition-colors hover:bg-background/25"
+          >
+            {code}
+            {copied ? <Check className="size-3" /> : <Copy className="size-3" />}
+          </button>
+        ) : (
+          <div className="flex items-center gap-1.5 rounded-full bg-background/15 px-2 py-1 font-mono text-[11px] font-medium tracking-tight">
+            <Ticket className="size-3" />
+            {code}
+          </div>
+        )}
+        <span className="text-center text-[9px] uppercase tracking-wider text-background/60">
+          Scan at gate
         </span>
-      </div>
-
-      <div className="flex flex-col items-center gap-2.5 px-5 pb-5 pt-6">
-        <div className="rounded-xl border border-border bg-white p-3 shadow-sm">
-          <QRCodeSVG value={qrValue} size={150} level="M" />
-        </div>
-        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <ShieldCheck className="size-3.5" />
-          Show this QR at the gate
-        </p>
-      </div>
-
-      <div className="relative">
-        <div className="border-t border-dashed border-border" />
-        <span className="absolute left-0 top-0 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-popover" />
-        <span className="absolute right-0 top-0 size-3 -translate-y-1/2 translate-x-1/2 rounded-full bg-popover" />
-      </div>
-
-      <div className="grid grid-cols-2 gap-x-4 gap-y-4 px-5 py-5">
-        <Detail icon={UserRound} label="Guest" value={name} />
-        <Detail
-          icon={Home}
-          label="Visiting"
-          value={`Flat ${currentFlat.flatNumber} · ${currentFlat.apartmentName}`}
-        />
-        <Detail icon={CalendarDays} label="Date" value={formatDate(date)} />
-        <Detail icon={Clock} label="Time" value={formatTime(time)} />
-        <Detail icon={UserCheck} label="Host" value={host} />
-        <Detail icon={Ticket} label="Pass code" value={code} mono />
       </div>
     </div>
   );

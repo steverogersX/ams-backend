@@ -11,12 +11,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
-  ArrowDown,
-  ArrowUp,
   CalendarDays,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsUpDown,
   CircleCheck,
   CircleDot,
   CircleSlash,
@@ -33,6 +28,8 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DataTableColumnHeader } from "@/components/data-table-column-header";
+import { DataTablePagination } from "@/components/data-table-pagination";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -65,7 +62,11 @@ const STATUS_META: Record<
 > = {
   expected: { label: "Expected", color: "text-blue-600 dark:text-blue-400", icon: Clock },
   entered: { label: "Inside", color: "text-amber-600 dark:text-amber-400", icon: DoorOpen },
-  completed: { label: "Completed", color: "text-emerald-600 dark:text-emerald-400", icon: CircleCheck },
+  completed: {
+    label: "Completed",
+    color: "text-emerald-600 dark:text-emerald-400",
+    icon: CircleCheck,
+  },
   denied: { label: "Denied", color: "text-red-600 dark:text-red-400", icon: CircleX },
   expired: { label: "Expired", color: "text-muted-foreground", icon: CircleSlash },
 };
@@ -85,51 +86,11 @@ function formatTime(time: string) {
   return `${hour}:${String(m).padStart(2, "0")} ${period}`;
 }
 
-type IconType = React.ComponentType<{ className?: string }>;
-
-function SortableHeader({
-  icon: Icon,
-  label,
-  sorted,
-  onClick,
-}: {
-  icon: IconType;
-  label: string;
-  sorted: false | "asc" | "desc";
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="-ml-1 flex items-center gap-1.5 rounded px-1 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground"
-    >
-      <Icon className="size-3.5 opacity-70" />
-      {label}
-      {sorted === "asc" ? (
-        <ArrowUp className="size-3" />
-      ) : sorted === "desc" ? (
-        <ArrowDown className="size-3" />
-      ) : (
-        <ChevronsUpDown className="size-3 opacity-40" />
-      )}
-    </button>
-  );
-}
-
-function HeaderLabel({ icon: Icon, label }: { icon: IconType; label: string }) {
-  return (
-    <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-      <Icon className="size-3.5 opacity-70" />
-      {label}
-    </span>
-  );
-}
-
 const columns: ColumnDef<Visitor>[] = [
   {
     accessorKey: "name",
     header: ({ column }) => (
-      <SortableHeader
+      <DataTableColumnHeader
         icon={UserRound}
         label="Visitor"
         sorted={column.getIsSorted()}
@@ -148,7 +109,7 @@ const columns: ColumnDef<Visitor>[] = [
   {
     accessorKey: "date",
     header: ({ column }) => (
-      <SortableHeader
+      <DataTableColumnHeader
         icon={CalendarDays}
         label="Date"
         sorted={column.getIsSorted()}
@@ -163,7 +124,7 @@ const columns: ColumnDef<Visitor>[] = [
   },
   {
     accessorKey: "time",
-    header: () => <HeaderLabel icon={Clock} label="Time" />,
+    header: () => <DataTableColumnHeader icon={Clock} label="Time" />,
     cell: ({ row }) => (
       <span className="whitespace-nowrap tabular-nums text-muted-foreground">
         {formatTime(row.original.time)}
@@ -172,7 +133,7 @@ const columns: ColumnDef<Visitor>[] = [
   },
   {
     accessorKey: "status",
-    header: () => <HeaderLabel icon={CircleDot} label="Status" />,
+    header: () => <DataTableColumnHeader icon={CircleDot} label="Status" />,
     cell: ({ row }) => {
       const meta = STATUS_META[row.original.status];
       const Icon = meta.icon;
@@ -186,7 +147,7 @@ const columns: ColumnDef<Visitor>[] = [
   },
   {
     accessorKey: "passCode",
-    header: () => <HeaderLabel icon={Ticket} label="Pass" />,
+    header: () => <DataTableColumnHeader icon={Ticket} label="Pass" />,
     cell: ({ row }) => (
       <span className="font-mono text-xs text-muted-foreground">{row.original.passCode}</span>
     ),
@@ -235,7 +196,7 @@ export function VisitorsTable() {
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    initialState: { pagination: { pageSize: 6 } },
+    initialState: { pagination: { pageSize: 5 } },
   });
 
   const activeFilterLabel =
@@ -314,34 +275,11 @@ export function VisitorsTable() {
           </TableBody>
         </Table>
 
-        <div className="flex items-center justify-between border-t border-border px-4 py-3">
-          <span className="text-xs text-muted-foreground">
-            {data.length} {data.length === 1 ? "visitor" : "visitors"} · page{" "}
-            {table.getState().pagination.pageIndex + 1} of {table.getPageCount() || 1}
-          </span>
-          <div className="flex items-center gap-1.5">
-            <Button
-              variant="outline"
-              size="icon-sm"
-              disabled={!table.getCanPreviousPage()}
-              onClick={() => table.previousPage()}
-            >
-              <ChevronLeft className="size-3.5" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon-sm"
-              disabled={!table.getCanNextPage()}
-              onClick={() => table.nextPage()}
-            >
-              <ChevronRight className="size-3.5" />
-            </Button>
-          </div>
-        </div>
+        <DataTablePagination table={table} itemLabel="visitor" showPageSize />
       </div>
 
       <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>Visitor pass</DialogTitle>
             <DialogDescription>Entry pass details for this visitor.</DialogDescription>
