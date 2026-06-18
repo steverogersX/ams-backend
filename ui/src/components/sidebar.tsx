@@ -22,13 +22,18 @@ import {
   Bird,
 } from "lucide-react";
 
+import { Permission, permissionKeyFromName, type PermissionDefinition } from "@shared/index";
+
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
 
 type NavItem = {
   label: string;
   href?: string;
   icon: React.ComponentType<{ className?: string }>;
   soon?: boolean;
+  /** Omit for items everyone with access to this dashboard should see; set to gate via the typed `Permission.*` accessor. */
+  permission?: PermissionDefinition;
 };
 
 export type { NavItem };
@@ -42,7 +47,7 @@ const defaultNavItems: NavItem[] = [
   { label: "Visitors", href: "/dashboard/visitors", icon: UserCheck },
   { label: "Amenities", href: "/dashboard/amenities", icon: Sofa },
   { label: "Notices", href: "/dashboard/notices", icon: Megaphone },
-  { label: "Users", href: "/dashboard/users", icon: Users },
+  { label: "Users", href: "/dashboard/users", icon: Users, permission: Permission.RolesView },
 ];
 
 const defaultSoonItems: NavItem[] = [
@@ -118,6 +123,15 @@ export function SidebarContent({
   moreLabel?: string;
   brand?: React.ReactNode;
 }) {
+  const { has } = useAuth();
+  const isVisible = (item: NavItem) => {
+    if (!item.permission) return true;
+    const key = permissionKeyFromName(item.permission.name);
+    return key ? has(key) : false;
+  };
+  const visibleNavItems = navItems.filter(isVisible);
+  const visibleSoonItems = soonItems.filter(isVisible);
+
   return (
     <div className="flex h-full flex-col">
       <div
@@ -141,16 +155,16 @@ export function SidebarContent({
         )}
       >
         <SectionLabel collapsed={collapsed}>{menuLabel}</SectionLabel>
-        {navItems.map((item) => (
+        {visibleNavItems.map((item) => (
           <NavLink key={item.label} item={item} collapsed={collapsed} />
         ))}
 
-        {soonItems.length > 0 && (
+        {visibleSoonItems.length > 0 && (
           <>
             <div className="pt-3">
               <SectionLabel collapsed={collapsed}>{moreLabel}</SectionLabel>
             </div>
-            {soonItems.map((item) => (
+            {visibleSoonItems.map((item) => (
               <NavLink key={item.label} item={item} collapsed={collapsed} />
             ))}
           </>
