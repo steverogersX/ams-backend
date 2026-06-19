@@ -43,6 +43,7 @@ export const Permission = Object.freeze({
   StaffManage: def('staff.manage', 'staff', 'Manage staff'),
   RolesView: def('roles.view', 'roles', 'View roles'),
   RolesCreate: def('roles.create', 'roles', 'Create a role'),
+  RolesUpdate: def('roles.update', 'roles', 'Update a role'),
   RolesAssign: def('roles.assign', 'roles', 'Assign a role'),
   RolesRevoke: def('roles.revoke', 'roles', 'Revoke a role'),
   RolesDelete: def('roles.delete', 'roles', 'Delete a role'),
@@ -70,4 +71,14 @@ const PERMISSION_KEY_BY_NAME: ReadonlyMap<string, PermissionKey> = new Map(
 /** Maps a persisted dot-notation permission name (e.g. 'billing.generate') back to its typed key. */
 export function permissionKeyFromName(name: string): PermissionKey | undefined {
   return PERMISSION_KEY_BY_NAME.get(name);
+}
+
+/** Maps persisted dot-notation permission names back to typed keys, dropping any that no longer exist. */
+export function permissionKeysFromNames(names: Iterable<string>): PermissionKey[] {
+  const keys: PermissionKey[] = [];
+  for (const name of names) {
+    const key = permissionKeyFromName(name);
+    if (key) keys.push(key);
+  }
+  return keys;
 }

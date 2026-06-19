@@ -10,9 +10,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Permission, type PermissionDefinition, type PermissionKey } from "@shared/index";
+import { Permission, type PermissionDefinition, type PermissionKey, type RoleResponse } from "@shared/index";
 import { useAuth } from "@/hooks/useAuth";
-import { type RoleRecord } from "@/lib/rolesMockData";
+import { createRoleRequest, updateRoleRequest } from "@/lib/roleApi";
+import { ApiClientError } from "@/lib/apiClient";
 
 const PERMISSION_ENTRIES = Object.entries(Permission) as [PermissionKey, PermissionDefinition][];
 
@@ -28,17 +29,18 @@ function domainLabel(domain: string) {
   return domain.charAt(0).toUpperCase() + domain.slice(1);
 }
 
-export function RolePermissionForm({ role }: { role?: RoleRecord }) {
+export function RolePermissionForm({ role }: { role?: RoleResponse }) {
   const router = useRouter();
-  const { has } = useAuth();
+  const { has, token, activeSociety } = useAuth();
   const isEdit = !!role;
-  const canEdit = has("RolesCreate");
+  const canEdit = isEdit ? has("RolesUpdate") && !role.isSystem : has("RolesCreate");
   const [name, setName] = React.useState(role?.name ?? "");
   const [description, setDescription] = React.useState(role?.description ?? "");
   const [selected, setSelected] = React.useState<Set<PermissionKey>>(
     () => new Set(role?.permissions ?? []),
   );
   const [nameError, setNameError] = React.useState<string | undefined>();
+  const [formError, setFormError] = React.useState<string | undefined>();
   const [submitting, setSubmitting] = React.useState(false);
 
   function togglePermission(key: PermissionKey, checked: boolean) {
@@ -63,14 +65,42 @@ export function RolePermissionForm({ role }: { role?: RoleRecord }) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setFormError(undefined);
     if (!name.trim()) {
       setNameError("Role name is required");
       return;
     }
+    if (selected.size === 0) {
+      setFormError("Select at least one permission");
+      return;
+    }
+    if (!token || !activeSociety) {
+      setFormError("No active society — switch societies and try again");
+      return;
+    }
+
+    const permissionNames = Array.from(selected, (key) => Permission[key].name);
+
     setSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 400));
-    setSubmitting(false);
-    router.push("/dashboard/roles");
+    try {
+      if (isEdit && role) {
+        await updateRoleRequest(token, activeSociety.societyToken, activeSociety.societyId, role.id, {
+          name: name.trim(),
+          description: description.trim() || undefined,
+          permissions: permissionNames,
+        });
+      } else {
+        await createRoleRequest(token, activeSociety.societyToken, activeSociety.societyId, {
+          name: name.trim(),
+          description: description.trim() || undefined,
+          permissions: permissionNames,
+        });
+      }
+      router.push("/dashboard/roles");
+    } catch (err) {
+      setFormError(err instanceof ApiClientError ? err.message : "Failed to save role");
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -165,14 +195,17 @@ export function RolePermissionForm({ role }: { role?: RoleRecord }) {
         </CardContent>
       </Card>
 
-      <div className="flex items-center justify-end gap-2 border-t border-border pt-4">
-        <Button type="button" variant="outline" onClick={() => router.push("/dashboard/roles")}>
-          Cancel
-        </Button>
-        <Button type="submit" disabled={submitting || !canEdit} className="gap-1.5">
-          <ShieldCheck className="size-3.5" />
-          {submitting ? "Saving…" : isEdit ? "Save changes" : "Create role"}
-        </Button>
+      <div className="flex items-center justify-between gap-2 border-t border-border pt-4">
+        {formError ? <p className="text-xs text-destructive">{formError}</p> : <span />}
+        <div className="flex items-center gap-2">
+          <Button type="button" variant="outline" onClick={() => router.push("/dashboard/roles")}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={submitting || !canEdit} className="gap-1.5">
+            <ShieldCheck className="size-3.5" />
+            {submitting ? "Saving…" : isEdit ? "Save changes" : "Create role"}
+          </Button>
+        </div>
       </div>
     </form>
   );

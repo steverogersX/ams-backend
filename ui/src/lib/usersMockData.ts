@@ -2,6 +2,18 @@ export type UserAccountStatus = "active" | "invited" | "suspended";
 
 export type FlatOccupancyType = "owner" | "tenant";
 
+export type VehicleDetail = {
+  registrationNumber: string;
+  type: "car" | "two_wheeler";
+  make: string;
+  model: string;
+  color: string;
+};
+
+/**
+ * Occupation, vehicles, and parking slot are not backed by any DB table yet (no `vehicles` or
+ * `parking_slots` schema, no `occupation` column on `users`) — UI-only mock data until those are built.
+ */
 export type UserRecord = {
   id: string;
   name: string;
@@ -11,8 +23,9 @@ export type UserRecord = {
   status: UserAccountStatus;
   flatNumber: string | null;
   occupancyType: FlatOccupancyType | null;
-  /** Not a DB-backed field yet — there's no `vehicles` table in src/db/schema/. UI-only mock data. */
-  vehicleNumber: string | null;
+  occupation: string | null;
+  vehicles: VehicleDetail[];
+  parkingSlot: string | null;
   lastActiveAt: string | null;
   invitedAt: string;
 };
@@ -41,7 +54,17 @@ export const users: UserRecord[] = [
     status: "active",
     flatNumber: "304",
     occupancyType: "tenant",
-    vehicleNumber: "TS09 AB 1234",
+    occupation: "Software Engineer",
+    vehicles: [
+      {
+        registrationNumber: "TS09 AB 1234",
+        type: "car",
+        make: "Hyundai",
+        model: "Creta",
+        color: "White",
+      },
+    ],
+    parkingSlot: "B-12",
     lastActiveAt: "2026-06-18T08:10:00+05:30",
     invitedAt: "2025-01-12T10:00:00+05:30",
   },
@@ -54,7 +77,24 @@ export const users: UserRecord[] = [
     status: "active",
     flatNumber: "101",
     occupancyType: "owner",
-    vehicleNumber: "TS09 CD 5678",
+    occupation: "Retired Bank Manager",
+    vehicles: [
+      {
+        registrationNumber: "TS09 CD 5678",
+        type: "car",
+        make: "Honda",
+        model: "City",
+        color: "Silver",
+      },
+      {
+        registrationNumber: "TS09 ZZ 4421",
+        type: "two_wheeler",
+        make: "Honda",
+        model: "Activa",
+        color: "Black",
+      },
+    ],
+    parkingSlot: "A-01",
     lastActiveAt: "2026-06-18T07:40:00+05:30",
     invitedAt: "2024-11-02T10:00:00+05:30",
   },
@@ -67,7 +107,9 @@ export const users: UserRecord[] = [
     status: "active",
     flatNumber: "204",
     occupancyType: "owner",
-    vehicleNumber: null,
+    occupation: "Chartered Accountant",
+    vehicles: [],
+    parkingSlot: null,
     lastActiveAt: "2026-06-17T19:20:00+05:30",
     invitedAt: "2025-02-20T10:00:00+05:30",
   },
@@ -80,7 +122,9 @@ export const users: UserRecord[] = [
     status: "active",
     flatNumber: null,
     occupancyType: null,
-    vehicleNumber: null,
+    occupation: "Security Guard",
+    vehicles: [],
+    parkingSlot: null,
     lastActiveAt: "2026-06-18T06:00:00+05:30",
     invitedAt: "2025-03-05T10:00:00+05:30",
   },
@@ -93,7 +137,17 @@ export const users: UserRecord[] = [
     status: "active",
     flatNumber: "402",
     occupancyType: "owner",
-    vehicleNumber: "TS10 EF 9012",
+    occupation: "School Teacher",
+    vehicles: [
+      {
+        registrationNumber: "TS10 EF 9012",
+        type: "two_wheeler",
+        make: "TVS",
+        model: "Jupiter",
+        color: "Red",
+      },
+    ],
+    parkingSlot: "B-04",
     lastActiveAt: "2026-06-16T12:15:00+05:30",
     invitedAt: "2025-04-18T10:00:00+05:30",
   },
@@ -106,7 +160,9 @@ export const users: UserRecord[] = [
     status: "invited",
     flatNumber: "104",
     occupancyType: "tenant",
-    vehicleNumber: null,
+    occupation: "Marketing Manager",
+    vehicles: [],
+    parkingSlot: null,
     lastActiveAt: null,
     invitedAt: "2026-06-14T10:00:00+05:30",
   },
@@ -119,7 +175,17 @@ export const users: UserRecord[] = [
     status: "active",
     flatNumber: "210",
     occupancyType: "owner",
-    vehicleNumber: "TS07 GH 3456",
+    occupation: "Doctor",
+    vehicles: [
+      {
+        registrationNumber: "TS07 GH 3456",
+        type: "car",
+        make: "Toyota",
+        model: "Innova",
+        color: "Grey",
+      },
+    ],
+    parkingSlot: "C-09",
     lastActiveAt: "2026-06-15T21:00:00+05:30",
     invitedAt: "2025-05-09T10:00:00+05:30",
   },
@@ -132,7 +198,17 @@ export const users: UserRecord[] = [
     status: "suspended",
     flatNumber: "308",
     occupancyType: "owner",
-    vehicleNumber: "TS08 IJ 7890",
+    occupation: "Business Owner",
+    vehicles: [
+      {
+        registrationNumber: "TS08 IJ 7890",
+        type: "car",
+        make: "Maruti Suzuki",
+        model: "Baleno",
+        color: "Blue",
+      },
+    ],
+    parkingSlot: "B-15",
     lastActiveAt: "2026-04-02T10:30:00+05:30",
     invitedAt: "2024-09-22T10:00:00+05:30",
   },
@@ -145,7 +221,9 @@ export const users: UserRecord[] = [
     status: "invited",
     flatNumber: "503",
     occupancyType: "tenant",
-    vehicleNumber: null,
+    occupation: "Architect",
+    vehicles: [],
+    parkingSlot: null,
     lastActiveAt: null,
     invitedAt: "2026-06-17T10:00:00+05:30",
   },
@@ -158,7 +236,17 @@ export const users: UserRecord[] = [
     status: "active",
     flatNumber: "112",
     occupancyType: "tenant",
-    vehicleNumber: "TS09 KL 2345",
+    occupation: "Data Analyst",
+    vehicles: [
+      {
+        registrationNumber: "TS09 KL 2345",
+        type: "two_wheeler",
+        make: "Bajaj",
+        model: "Pulsar",
+        color: "Black",
+      },
+    ],
+    parkingSlot: "A-07",
     lastActiveAt: "2026-06-18T09:00:00+05:30",
     invitedAt: "2025-08-30T10:00:00+05:30",
   },
@@ -171,7 +259,9 @@ export const users: UserRecord[] = [
     status: "active",
     flatNumber: "401",
     occupancyType: "owner",
-    vehicleNumber: null,
+    occupation: "Homemaker",
+    vehicles: [],
+    parkingSlot: null,
     lastActiveAt: "2026-06-13T17:45:00+05:30",
     invitedAt: "2024-12-15T10:00:00+05:30",
   },
@@ -184,7 +274,9 @@ export const users: UserRecord[] = [
     status: "suspended",
     flatNumber: null,
     occupancyType: null,
-    vehicleNumber: null,
+    occupation: "Security Guard",
+    vehicles: [],
+    parkingSlot: null,
     lastActiveAt: "2026-03-11T08:00:00+05:30",
     invitedAt: "2025-01-25T10:00:00+05:30",
   },

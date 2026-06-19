@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { ChevronsUpDown, LogOut, UserCog } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -19,14 +20,14 @@ export function AccountMenu({
   name,
   email,
   badges = [],
+  profileHref,
   onSignOut,
-  extraItems,
 }: {
   name: string;
   email?: string | null;
   badges?: string[];
+  profileHref?: string;
   onSignOut: () => void;
-  extraItems?: React.ReactNode;
 }) {
   const [from, to] = gradientForName(name);
 
@@ -74,11 +75,13 @@ export function AccountMenu({
         <DropdownMenuSeparator className="mx-0" />
 
         <DropdownMenuGroup className="p-1.5">
-          <DropdownMenuItem className="gap-2 py-1.5">
+          <DropdownMenuItem
+            className="gap-2 py-1.5"
+            render={profileHref ? <Link href={profileHref} /> : undefined}
+          >
             <UserCog className="size-4 text-muted-foreground" />
             Profile settings
           </DropdownMenuItem>
-          {extraItems}
         </DropdownMenuGroup>
 
         <DropdownMenuSeparator className="mx-0" />

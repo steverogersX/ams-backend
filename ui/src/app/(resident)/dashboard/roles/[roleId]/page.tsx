@@ -1,19 +1,47 @@
+"use client";
+
+import * as React from "react";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { useParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import type { RoleResponse } from "@shared/index";
 
 import { RolePermissionForm } from "@/components/roles/rolePermissionForm";
-import { SetBreadcrumbTitle } from "@/components/breadcrumbs";
-import { roles } from "@/lib/rolesMockData";
+import { useBreadcrumbTitle } from "@/components/breadcrumbs";
+import { useAuth } from "@/hooks/useAuth";
+import { getRoleRequest } from "@/lib/roleApi";
+import { ApiClientError } from "@/lib/apiClient";
 
-export default async function EditRolePage({ params }: { params: Promise<{ roleId: string }> }) {
-  const { roleId } = await params;
-  const role = roles.find((r) => r.id === roleId);
-  if (!role) notFound();
+export default function EditRolePage() {
+  const params = useParams<{ roleId: string }>();
+  const { token, activeSociety } = useAuth();
+  const [role, setRole] = React.useState<RoleResponse | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (!token || !activeSociety) return;
+    getRoleRequest(token, activeSociety.societyToken, activeSociety.societyId, params.roleId)
+      .then(setRole)
+      .catch((err) => setError(err instanceof ApiClientError ? err.message : "Role not found"));
+  }, [token, activeSociety, params.roleId]);
+
+  useBreadcrumbTitle(role?.name);
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center gap-2 py-16 text-center">
+        <p className="text-sm text-muted-foreground">{error}</p>
+        <Link href="/dashboard/roles" className="text-sm font-medium text-foreground underline">
+          Back to roles
+        </Link>
+      </div>
+    );
+  }
+
+  if (!role) return null;
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-5">
-      <SetBreadcrumbTitle title={role.name} />
       <div className="flex flex-col gap-2">
         <Link
           href="/dashboard/roles"

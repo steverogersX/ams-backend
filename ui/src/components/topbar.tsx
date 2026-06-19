@@ -112,8 +112,8 @@ export function Topbar() {
           name={displayName}
           email={user?.email}
           badges={roles.length ? roles : ["No role in this society"]}
+          profileHref="/dashboard/profile"
           onSignOut={handleSignOut}
-          extraItems={<DropdownMenuItem className="gap-2 py-1.5">Switch account</DropdownMenuItem>}
         />
       </div>
     </header>

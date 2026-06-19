@@ -5,18 +5,9 @@ import { db } from '@/db/client';
 import { users, sessions, societies, roles, rolePermissions, userRoles } from '@/db/schema';
 import { config } from '@/config';
 import { ApiError } from '@/utils/ApiError';
-import { permissionKeyFromName, type PermissionKey } from '@shared/index';
+import { permissionKeysFromNames } from '@shared/index';
 import type { LoginResponse, MeResponse, RegisterResponse, SocietyMembership } from '@shared/index';
 import type { RequestContext } from './auth.types';
-
-function toPermissionKeys(names: Iterable<string>): PermissionKey[] {
-  const keys: PermissionKey[] = [];
-  for (const name of names) {
-    const key = permissionKeyFromName(name);
-    if (key) keys.push(key);
-  }
-  return keys;
-}
 
 const scryptAsync = promisify(scrypt);
 
@@ -123,7 +114,7 @@ class AuthService {
     const societyMemberships = await Promise.all(
       [...societyMap.values()].map(async (membership) => {
         const effective = await this.getEffectivePermissions(user.id, membership.societyId);
-        membership.permissions = toPermissionKeys(effective);
+        membership.permissions = permissionKeysFromNames(effective);
         return membership;
       }),
     );
@@ -224,7 +215,7 @@ class AuthService {
       ...user,
       societyId: ctx.societyId,
       roles: roleNames,
-      permissions: toPermissionKeys(ctx.permissions),
+      permissions: permissionKeysFromNames(ctx.permissions),
     };
   }
 

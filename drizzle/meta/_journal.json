@@ -29,6 +29,13 @@
       "when": 1781673762101,
       "tag": "0003_lumpy_black_knight",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1781860134971,
+      "tag": "0004_fancy_maestro",
+      "breakpoints": true
     }
   ]
 }
