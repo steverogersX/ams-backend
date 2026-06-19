@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import type { ColumnDef } from "@tanstack/react-table";
+import type { RoleResponse } from "@shared/index";
 import { Copy, MoreHorizontal, Pencil, Plus, ShieldCheck, Trash2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -16,21 +17,42 @@ import {
 import { DataTable, type DataTableFilterConfig } from "@/components/dataTable";
 import { DataTableColumnHeader } from "@/components/dataTableColumnHeader";
 import { useAuth } from "@/hooks/useAuth";
-import { roles as initialRoles, type RoleRecord } from "@/lib/rolesMockData";
+import { deleteRoleRequest, listRolesRequest } from "@/lib/roleApi";
+import { ApiClientError } from "@/lib/apiClient";
 
-function formatDate(iso: string) {
+function formatDate(iso: string | Date) {
   return new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 }
 
 export function RolesTable() {
-  const { has } = useAuth();
-  const [data, setData] = React.useState<RoleRecord[]>(initialRoles);
+  const { has, token, activeSociety } = useAuth();
+  const [data, setData] = React.useState<RoleResponse[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
 
-  function removeRole(id: string) {
-    setData((rows) => rows.filter((r) => r.id !== id));
+  React.useEffect(() => {
+    if (!token || !activeSociety) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    listRolesRequest(token, activeSociety.societyToken, activeSociety.societyId)
+      .then(setData)
+      .catch((err) => setError(err instanceof ApiClientError ? err.message : "Failed to load roles"))
+      .finally(() => setLoading(false));
+  }, [token, activeSociety]);
+
+  async function removeRole(id: string) {
+    if (!token || !activeSociety) return;
+    try {
+      await deleteRoleRequest(token, activeSociety.societyToken, activeSociety.societyId, id);
+      setData((rows) => rows.filter((r) => r.id !== id));
+    } catch (err) {
+      setError(err instanceof ApiClientError ? err.message : "Failed to delete role");
+    }
   }
 
-  const columns = React.useMemo<ColumnDef<RoleRecord>[]>(
+  const columns = React.useMemo<ColumnDef<RoleResponse>[]>(
     () => [
       {
         id: "name",
@@ -124,13 +146,13 @@ export function RolesTable() {
                   render={<Link href={`/dashboard/roles/${role.id}`} />}
                 >
                   <Pencil className="size-4 text-muted-foreground" />
-                  Edit role
+                  {role.isSystem ? "View role" : "Edit role"}
                 </DropdownMenuItem>
-                <DropdownMenuItem className="gap-2">
+                <DropdownMenuItem className="gap-2" disabled>
                   <Copy className="size-4 text-muted-foreground" />
                   Duplicate
                 </DropdownMenuItem>
-                {has("RolesDelete") && (
+                {has("RolesDelete") && !role.isSystem && (
                   <DropdownMenuItem
                     variant="destructive"
                     className="gap-2"
@@ -149,7 +171,7 @@ export function RolesTable() {
     [has],
   );
 
-  const filters = React.useMemo<DataTableFilterConfig<RoleRecord>[]>(
+  const filters = React.useMemo<DataTableFilterConfig<RoleResponse>[]>(
     () => [
       {
         id: "search",
@@ -182,6 +204,10 @@ export function RolesTable() {
     [],
   );
 
+  if (error) {
+    return <p className="text-sm text-destructive">{error}</p>;
+  }
+
   return (
     <DataTable
       data={data}
@@ -194,7 +220,7 @@ export function RolesTable() {
       showPageSize
       pageSize={8}
       itemLabel="role"
-      emptyMessage="No roles match these filters."
+      emptyMessage={loading ? "Loading roles…" : "No roles match these filters."}
       toolbarActions={
         <Button size="sm" className="gap-1.5" render={<Link href="/dashboard/roles/new" />}>
           <Plus className="size-3.5" />
