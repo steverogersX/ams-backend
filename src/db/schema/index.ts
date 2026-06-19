@@ -11,4 +11,6 @@ export * from './sessions';
 export * from './apartments';
 export * from './flats';
 export * from './complaints';
+export * from './parking-slots';
+export * from './vehicles';
 export * from './relations';

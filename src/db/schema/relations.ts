@@ -8,6 +8,8 @@ import { sessions } from './sessions';
 import { apartments } from './apartments';
 import { flats } from './flats';
 import { complaints } from './complaints';
+import { parkingSlots } from './parking-slots';
+import { vehicles } from './vehicles';
 
 /**
  * Drizzle relation metadata for typed, ergonomic joins (e.g. `db.query.roles.findMany({ with: ... })`).
@@ -32,6 +34,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   rentedFlats: many(flats, { relationName: 'rentedFlats' }),
   raisedComplaints: many(complaints, { relationName: 'complaintRaiser' }),
   assignedComplaints: many(complaints, { relationName: 'complaintAssignee' }),
+  vehicles: many(vehicles),
 }));
 
 export const rolesRelations = relations(roles, ({ one, many }) => ({
@@ -95,4 +98,17 @@ export const complaintsRelations = relations(complaints, ({ one }) => ({
     relationName: 'complaintAssignee',
   }),
   flat: one(flats, { fields: [complaints.flatId], references: [flats.id] }),
+}));
+
+export const parkingSlotsRelations = relations(parkingSlots, ({ one, many }) => ({
+  society: one(societies, { fields: [parkingSlots.societyId], references: [societies.id] }),
+  vehicle: many(vehicles),
+}));
+
+export const vehiclesRelations = relations(vehicles, ({ one }) => ({
+  owner: one(users, { fields: [vehicles.userId], references: [users.id] }),
+  parkingSlot: one(parkingSlots, {
+    fields: [vehicles.parkingSlotId],
+    references: [parkingSlots.id],
+  }),
 }));
