@@ -11,6 +11,7 @@ import {
   Car,
   UserCheck,
   Users,
+  ShieldCheck,
   Sofa,
   Megaphone,
   HandHelping,
@@ -48,6 +49,7 @@ const defaultNavItems: NavItem[] = [
   { label: "Amenities", href: "/dashboard/amenities", icon: Sofa },
   { label: "Notices", href: "/dashboard/notices", icon: Megaphone },
   { label: "Users", href: "/dashboard/users", icon: Users, permission: Permission.RolesView },
+  { label: "Roles", href: "/dashboard/roles", icon: ShieldCheck },
 ];
 
 const defaultSoonItems: NavItem[] = [
@@ -150,9 +152,10 @@ export function SidebarContent({
 
       <nav
         className={cn(
-          "flex flex-1 flex-col gap-0.5 overflow-y-auto py-3",
+          "flex flex-1 flex-col gap-0.5 overflow-y-auto py-3 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full",
           collapsed ? "items-center px-2" : "px-3",
         )}
+        style={{ scrollbarWidth: "thin" }}
       >
         <SectionLabel collapsed={collapsed}>{menuLabel}</SectionLabel>
         {visibleNavItems.map((item) => (

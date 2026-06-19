@@ -1,7 +1,10 @@
+"use client";
+
 import Link from "next/link";
 import { Droplets, CalendarDays, Sparkles, Info, ArrowRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { useNow } from "@/hooks/useNow";
 import { NoticeKind, notices } from "@/lib/mockData";
 
 const KIND_META: Record<
@@ -17,8 +20,8 @@ const KIND_META: Record<
   general: { icon: Info, className: "bg-muted text-muted-foreground" },
 };
 
-function relativeTime(iso: string) {
-  const diffMs = Date.now() - new Date(iso).getTime();
+function relativeTime(iso: string, now: number) {
+  const diffMs = now - new Date(iso).getTime();
   const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
   if (days <= 0) return "Today";
   if (days === 1) return "1d";
@@ -27,6 +30,8 @@ function relativeTime(iso: string) {
 }
 
 export function NoticesFeed() {
+  const now = useNow();
+
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-md border border-border bg-card">
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
@@ -61,8 +66,8 @@ export function NoticesFeed() {
                     )}
                     {notice.title}
                   </span>
-                  <span className="shrink-0 text-xs text-muted-foreground">
-                    {relativeTime(notice.postedAt)}
+                  <span className="shrink-0 text-xs text-muted-foreground" suppressHydrationWarning>
+                    {now ? relativeTime(notice.postedAt, now) : ""}
                   </span>
                 </div>
                 <p className="line-clamp-2 text-xs leading-relaxed text-muted-foreground">

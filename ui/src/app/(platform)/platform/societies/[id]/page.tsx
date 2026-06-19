@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { SocietyLogo } from "@/components/societyLogo";
+import { useBreadcrumbTitle } from "@/components/breadcrumbs";
 import { getSocietiesRequest } from "@/lib/societyApi";
 import { getSocietyDetails } from "@/lib/platformMockData";
 import { getInitials } from "@/lib/utils";
@@ -55,6 +56,8 @@ export default function SocietyDetailPage() {
     if (!token) return;
     getSocietiesRequest(token).then(setSocieties).catch(() => setSocieties([]));
   }, [token]);
+
+  useBreadcrumbTitle(societies?.find((s) => s.id === params.id)?.name);
 
   if (societies === null) return null;
 

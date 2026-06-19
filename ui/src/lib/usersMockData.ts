@@ -1,5 +1,7 @@
 export type UserAccountStatus = "active" | "invited" | "suspended";
 
+export type FlatOccupancyType = "owner" | "tenant";
+
 export type UserRecord = {
   id: string;
   name: string;
@@ -8,9 +10,17 @@ export type UserRecord = {
   role: string;
   status: UserAccountStatus;
   flatNumber: string | null;
+  occupancyType: FlatOccupancyType | null;
+  /** Not a DB-backed field yet — there's no `vehicles` table in src/db/schema/. UI-only mock data. */
+  vehicleNumber: string | null;
   lastActiveAt: string | null;
   invitedAt: string;
 };
+
+export const occupancyTypeOptions: { label: string; value: FlatOccupancyType }[] = [
+  { label: "Owner", value: "owner" },
+  { label: "Tenant", value: "tenant" },
+];
 
 export const roleOptions = [
   "Resident",
@@ -30,6 +40,8 @@ export const users: UserRecord[] = [
     role: "Resident",
     status: "active",
     flatNumber: "304",
+    occupancyType: "tenant",
+    vehicleNumber: "TS09 AB 1234",
     lastActiveAt: "2026-06-18T08:10:00+05:30",
     invitedAt: "2025-01-12T10:00:00+05:30",
   },
@@ -41,6 +53,8 @@ export const users: UserRecord[] = [
     role: "Society Admin",
     status: "active",
     flatNumber: "101",
+    occupancyType: "owner",
+    vehicleNumber: "TS09 CD 5678",
     lastActiveAt: "2026-06-18T07:40:00+05:30",
     invitedAt: "2024-11-02T10:00:00+05:30",
   },
@@ -52,6 +66,8 @@ export const users: UserRecord[] = [
     role: "Treasurer",
     status: "active",
     flatNumber: "204",
+    occupancyType: "owner",
+    vehicleNumber: null,
     lastActiveAt: "2026-06-17T19:20:00+05:30",
     invitedAt: "2025-02-20T10:00:00+05:30",
   },
@@ -63,6 +79,8 @@ export const users: UserRecord[] = [
     role: "Security Guard",
     status: "active",
     flatNumber: null,
+    occupancyType: null,
+    vehicleNumber: null,
     lastActiveAt: "2026-06-18T06:00:00+05:30",
     invitedAt: "2025-03-05T10:00:00+05:30",
   },
@@ -74,6 +92,8 @@ export const users: UserRecord[] = [
     role: "Committee Member",
     status: "active",
     flatNumber: "402",
+    occupancyType: "owner",
+    vehicleNumber: "TS10 EF 9012",
     lastActiveAt: "2026-06-16T12:15:00+05:30",
     invitedAt: "2025-04-18T10:00:00+05:30",
   },
@@ -85,6 +105,8 @@ export const users: UserRecord[] = [
     role: "Tenant",
     status: "invited",
     flatNumber: "104",
+    occupancyType: "tenant",
+    vehicleNumber: null,
     lastActiveAt: null,
     invitedAt: "2026-06-14T10:00:00+05:30",
   },
@@ -96,6 +118,8 @@ export const users: UserRecord[] = [
     role: "Resident",
     status: "active",
     flatNumber: "210",
+    occupancyType: "owner",
+    vehicleNumber: "TS07 GH 3456",
     lastActiveAt: "2026-06-15T21:00:00+05:30",
     invitedAt: "2025-05-09T10:00:00+05:30",
   },
@@ -107,6 +131,8 @@ export const users: UserRecord[] = [
     role: "Resident",
     status: "suspended",
     flatNumber: "308",
+    occupancyType: "owner",
+    vehicleNumber: "TS08 IJ 7890",
     lastActiveAt: "2026-04-02T10:30:00+05:30",
     invitedAt: "2024-09-22T10:00:00+05:30",
   },
@@ -118,6 +144,8 @@ export const users: UserRecord[] = [
     role: "Committee Member",
     status: "invited",
     flatNumber: "503",
+    occupancyType: "tenant",
+    vehicleNumber: null,
     lastActiveAt: null,
     invitedAt: "2026-06-17T10:00:00+05:30",
   },
@@ -129,6 +157,8 @@ export const users: UserRecord[] = [
     role: "Tenant",
     status: "active",
     flatNumber: "112",
+    occupancyType: "tenant",
+    vehicleNumber: "TS09 KL 2345",
     lastActiveAt: "2026-06-18T09:00:00+05:30",
     invitedAt: "2025-08-30T10:00:00+05:30",
   },
@@ -140,6 +170,8 @@ export const users: UserRecord[] = [
     role: "Resident",
     status: "active",
     flatNumber: "401",
+    occupancyType: "owner",
+    vehicleNumber: null,
     lastActiveAt: "2026-06-13T17:45:00+05:30",
     invitedAt: "2024-12-15T10:00:00+05:30",
   },
@@ -151,6 +183,8 @@ export const users: UserRecord[] = [
     role: "Security Guard",
     status: "suspended",
     flatNumber: null,
+    occupancyType: null,
+    vehicleNumber: null,
     lastActiveAt: "2026-03-11T08:00:00+05:30",
     invitedAt: "2025-01-25T10:00:00+05:30",
   },
