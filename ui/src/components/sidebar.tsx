@@ -11,6 +11,7 @@ import {
   Car,
   UserCheck,
   Users,
+  ShieldCheck,
   Sofa,
   Megaphone,
   HandHelping,
@@ -48,6 +49,7 @@ const defaultNavItems: NavItem[] = [
   { label: "Amenities", href: "/dashboard/amenities", icon: Sofa },
   { label: "Notices", href: "/dashboard/notices", icon: Megaphone },
   { label: "Users", href: "/dashboard/users", icon: Users, permission: Permission.RolesView },
+  { label: "Roles", href: "/dashboard/roles", icon: ShieldCheck },
 ];
 
 const defaultSoonItems: NavItem[] = [
