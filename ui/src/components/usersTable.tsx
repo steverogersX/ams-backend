@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import type { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal, Plus, ShieldOff, UserCog, UserPlus } from "lucide-react";
 
@@ -8,30 +9,11 @@ import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { DataTable, type DataTableFilterConfig } from "@/components/dataTable";
 import { DataTableColumnHeader } from "@/components/dataTableColumnHeader";
 import { getInitials, gradientForName } from "@/lib/utils";
@@ -52,83 +34,6 @@ const STATUS_LABEL: Record<UserAccountStatus, string> = {
 function formatRelative(iso: string | null) {
   if (!iso) return "Never";
   return new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
-}
-
-function AddUserDialog({ onAdd }: { onAdd: (user: UserRecord) => void }) {
-  const [open, setOpen] = React.useState(false);
-  const [name, setName] = React.useState("");
-  const [email, setEmail] = React.useState("");
-  const [role, setRole] = React.useState<string>(roleOptions[0]);
-  const [flatNumber, setFlatNumber] = React.useState("");
-
-  function handleSubmit() {
-    onAdd({
-      id: crypto.randomUUID(),
-      name,
-      email,
-      phone: "",
-      role,
-      status: "invited",
-      flatNumber: flatNumber || null,
-      lastActiveAt: null,
-      invitedAt: new Date().toISOString(),
-    });
-    setName("");
-    setEmail("");
-    setRole(roleOptions[0]);
-    setFlatNumber("");
-    setOpen(false);
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button size="sm" className="gap-1.5" />}>
-        <Plus className="size-3.5" />
-        Add user
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Add user</DialogTitle>
-          <DialogDescription>Invite a new resident or committee member to this society.</DialogDescription>
-        </DialogHeader>
-        <div className="flex flex-col gap-3">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="user-name">Name</Label>
-            <Input id="user-name" value={name} onChange={(e) => setName(e.target.value)} />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="user-email">Email</Label>
-            <Input id="user-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label>Role</Label>
-            <Select value={role} onValueChange={(v) => setRole(v ?? roleOptions[0])}>
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {roleOptions.map((r) => (
-                  <SelectItem key={r} value={r}>
-                    {r}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="user-flat">Flat number (optional)</Label>
-            <Input id="user-flat" value={flatNumber} onChange={(e) => setFlatNumber(e.target.value)} />
-          </div>
-        </div>
-        <DialogFooter>
-          <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
-          <Button onClick={handleSubmit} disabled={!name || !email}>
-            Send invite
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
 }
 
 export function UsersTable() {
@@ -327,7 +232,12 @@ export function UsersTable() {
       pageSize={8}
       itemLabel="user"
       emptyMessage="No users match these filters."
-      toolbarActions={<AddUserDialog onAdd={(user) => setData((rows) => [user, ...rows])} />}
+      toolbarActions={
+        <Button size="sm" className="gap-1.5" render={<Link href="/dashboard/users/new" />}>
+          <Plus className="size-3.5" />
+          Add user
+        </Button>
+      }
     />
   );
 }
