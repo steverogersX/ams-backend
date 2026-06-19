@@ -12,7 +12,7 @@ export function listRolesRequest(
   societyToken: string,
   societyId: string,
 ): Promise<RoleResponse[]> {
-  return apiFetch<RoleResponse[]>(`/societies/${societyId}/roles`, {
+  return apiFetch<RoleResponse[]>(`/societies/${societyId}/getRoles`, {
     method: "GET",
     token,
     societyToken,
@@ -25,7 +25,7 @@ export function getRoleRequest(
   societyId: string,
   roleId: string,
 ): Promise<RoleResponse> {
-  return apiFetch<RoleResponse>(`/societies/${societyId}/roles/${roleId}`, {
+  return apiFetch<RoleResponse>(`/societies/${societyId}/getRole/${roleId}`, {
     method: "GET",
     token,
     societyToken,
@@ -38,7 +38,7 @@ export function createRoleRequest(
   societyId: string,
   data: RoleInput,
 ): Promise<RoleResponse> {
-  return apiFetch<RoleResponse>(`/societies/${societyId}/roles`, {
+  return apiFetch<RoleResponse>(`/societies/${societyId}/createRole`, {
     method: "POST",
     token,
     societyToken,
@@ -53,7 +53,7 @@ export function updateRoleRequest(
   roleId: string,
   data: RoleInput,
 ): Promise<RoleResponse> {
-  return apiFetch<RoleResponse>(`/societies/${societyId}/roles/${roleId}`, {
+  return apiFetch<RoleResponse>(`/societies/${societyId}/editRole/${roleId}`, {
     method: "PUT",
     token,
     societyToken,
@@ -67,7 +67,7 @@ export function deleteRoleRequest(
   societyId: string,
   roleId: string,
 ): Promise<null> {
-  return apiFetch<null>(`/societies/${societyId}/roles/${roleId}`, {
+  return apiFetch<null>(`/societies/${societyId}/deleteRole/${roleId}`, {
     method: "DELETE",
     token,
     societyToken,
